@@ -13,25 +13,27 @@ public class Song {
     List<ESEffect> effects;
     int tempoBPM;
     int phraseLength;
+    String description;
 
     public Song() {
         this(120);
     }
 
     public Song(int tempoBPM) {
-        this(tempoBPM,8);
+        this(tempoBPM,8,"");
     }
 
-    public Song(int tempoBPM, int phraseLength) {
-        this(tempoBPM,phraseLength,new ArrayList<Track>());
+    public Song(int tempoBPM, int phraseLength, String description) {
+        this(tempoBPM,phraseLength,new ArrayList<Track>(),description);
     }
 
-    public Song(int tempoBPM, int phraseLength, List<Track> tracks) {
+    public Song(int tempoBPM, int phraseLength, List<Track> tracks, String description) {
         this.tempoBPM = tempoBPM;
         this.phraseLength = phraseLength;
         this.tracks = tracks;
         this.forLoops = new ArrayList<ForLoop>();
         this.effects = new ArrayList<ESEffect>();
+        this.description = description;
     }
 
 
