@@ -12,9 +12,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import data.Song;
 
-public class HomeActivity extends Activity
+
+public class CurrentSongActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    private Song current;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -29,7 +33,7 @@ public class HomeActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_current_song);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -78,7 +82,7 @@ public class HomeActivity extends Activity
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.home, menu);
+            getMenuInflater().inflate(R.menu.current_song, menu);
             restoreActionBar();
             return true;
         }
@@ -127,15 +131,15 @@ public class HomeActivity extends Activity
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_home, container, false);
+                                 Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_current_song, container, false);
             return rootView;
         }
 
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            ((HomeActivity) activity).onSectionAttached(
+            ((CurrentSongActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
     }
