@@ -11,7 +11,7 @@ public class Song {
     List<Section> sections;
     List<ForLoop> forLoops;
     List<IfStatement> ifStatements;
-    List<ESEffect> effects;
+    List<ESSetEffect> effects;
     List<Group> groups;
     int tempoBPM;
     int phraseLength;
@@ -34,7 +34,7 @@ public class Song {
         this.phraseLength = phraseLength;
         this.sections = sections;
         this.forLoops = new ArrayList<ForLoop>();
-        this.effects = new ArrayList<ESEffect>();
+        this.effects = new ArrayList<ESSetEffect>();
         this.description = description;
     }
 

@@ -4,23 +4,23 @@ package data;
  * Created by davidhendon on 11/19/14.
  */
 public class IfStatement {
-    static final String[] COMPARISONS = {"=", "!=", ">", "<", "<=", ">="};
+
     String firstItem;
     String secondItem;
-    String comparison;
+    String conditional;
 
     public IfStatement(String firstItem, String secondItem, String comparison) {
         this.firstItem = firstItem;
         this.secondItem = secondItem;
-        this.comparison = comparison;
+        this.conditional = comparison;
     }
 
     /**
      * Evaluates this if statement
      *
      * @return true if this if statement evaluates to "true"
-     * by parsing 'firstItem comparison secondItem', and this returns false when this would
-     * evaluate to "false" if parsed as 'firstItem comparison secondItem'
+     * by parsing 'firstItem conditional secondItem', and this returns false when this would
+     * evaluate to "false" if parsed as 'firstItem conditional secondItem'
      */
     public boolean evaluate() {
         // firstItem COMPARISON secondItem
@@ -40,12 +40,12 @@ public class IfStatement {
         this.secondItem = secondItem;
     }
 
-    public String getComparison() {
-        return comparison;
+    public String getConditional() {
+        return conditional;
     }
 
-    public void setComparison(String comparison) {
-        this.comparison = comparison;
+    public void setConditional(String comparison) {
+        this.conditional = comparison;
     }
 
 }

@@ -8,6 +8,7 @@ import android.util.Log;
 /**
  * Created by davidhendon on 10/28/14.
  */
+// TODO replace this with a JSON form of saving.
 
 public class SongDatabaseHelper extends SQLiteOpenHelper {
 

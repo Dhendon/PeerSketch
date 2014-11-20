@@ -9,19 +9,19 @@ import java.util.List;
  * Created by davidhendon on 10/28/14.
  */
 public class Section {
-    List<ForLoop> forLoops;
-    List<IfStatement> ifStatements;
-    List<ESEffect> effects;
-    List<ESFitMedia> fitMedias;
-    List<ESMakeBeat> makeBeats;
-    List<Pair<Integer, Integer>> activeMeasures; // TODO: update this when parameters are changed
-    String sample; // TODO: replace with MediaPlayer file
+    private List<ForLoop> forLoops;
+    private List<IfStatement> ifStatements;
+    private List<ESSetEffect> effects;
+    private List<ESFitMedia> fitMedias;
+    private List<ESMakeBeat> makeBeats;
+    private List<Pair<Integer, Integer>> activeMeasures; // TODO: update this when parameters are changed
+    private String sample; // TODO: replace with MediaPlayer file
 
     public Section(String sample) {
         this.sample = sample;
         forLoops = new ArrayList<ForLoop>();
         ifStatements = new ArrayList<IfStatement>();
-        effects = new ArrayList<ESEffect>();
+        effects = new ArrayList<ESSetEffect>();
         fitMedias = new ArrayList<ESFitMedia>();
         makeBeats = new ArrayList<ESMakeBeat>();
         activeMeasures = new ArrayList<Pair<Integer, Integer>>();
@@ -52,7 +52,7 @@ public class Section {
         }
     }
 
-    public void add(ESEffect effect, int location) {
+    public void add(ESSetEffect effect, int location) {
         if (validLocation(location, effects)) {
             effects.add(location, effect);
         } else {
@@ -80,6 +80,11 @@ public class Section {
         return location <= list.size() && location >= 0;
     }
 
+    // TODO: Implement this method
+    public boolean isValid() {
+        return true;
+    }
+
     public List<ForLoop> getForLoops() {
         return forLoops;
     }
@@ -88,7 +93,7 @@ public class Section {
         return ifStatements;
     }
 
-    public List<ESEffect> getEffects() {
+    public List<ESSetEffect> getEffects() {
         return effects;
     }
 
