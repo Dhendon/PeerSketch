@@ -10,7 +10,9 @@ import java.util.List;
 public class Song {
     List<Section> sections;
     List<ForLoop> forLoops;
+    List<IfStatement> ifStatements;
     List<ESEffect> effects;
+    List<Group> groups;
     int tempoBPM;
     int phraseLength;
     String description;
@@ -36,5 +38,65 @@ public class Song {
         this.description = description;
     }
 
+    public void addSection(Section section, int location) {
+        if (validLocation(location, sections)) {
+            sections.add(location, section);
+        } else {
+            sections.add(section);
+        }
+    }
 
+    public void addGroup(Group group, int location) {
+        if (validLocation(location, groups)) {
+            groups.add(location, group);
+        } else {
+            groups.add(group);
+        }
+    }
+
+    public void addIfStatement(IfStatement ifStatement, int location) {
+        if (validLocation(location, ifStatements)) {
+            ifStatements.add(location, ifStatement);
+        } else {
+            ifStatements.add(ifStatement);
+        }
+
+    }
+
+    public void addForLoop(ForLoop forLoop, int location) {
+        if (validLocation(location, forLoops)) {
+            forLoops.add(location, forLoop);
+        } else {
+            forLoops.add(forLoop);
+        }
+
+    }
+
+    private boolean validLocation(int location, List<?> list) {
+        return location <= list.size() && location >= 0;
+    }
+
+    public int getTempoBPM() {
+        return tempoBPM;
+    }
+
+    public void setTempoBPM(int tempoBPM) {
+        this.tempoBPM = tempoBPM;
+    }
+
+    public int getPhraseLength() {
+        return phraseLength;
+    }
+
+    public void setPhraseLength(int phraseLength) {
+        this.phraseLength = phraseLength;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
