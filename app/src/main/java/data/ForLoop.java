@@ -1,9 +1,12 @@
 package data;
 
+import java.io.Serializable;
+
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class ForLoop {
+public class ForLoop implements Serializable {
+    private static final long serialVersionUID = 3L;
     private int start;
     private int stepSize; //TODO: check stepSize to make sure it's valid
     private int end;

@@ -1,9 +1,12 @@
 package data;
 
+import java.io.Serializable;
+
 /**
- * Created by davidhendon on 11/19/14.
+ * Created by hendon on 11/19/14.
  */
-public class ESFitMedia {
+public class ESFitMedia implements Serializable {
+    private static final long serialVersionUID = 0L;
     private String sampleName;
     private int trackNumber;
     private double startLocation;
@@ -16,7 +19,7 @@ public class ESFitMedia {
         this.endLocation = endLocation;
     }
 
-    // TODO: Implement this method
+    // TODO: Implement this FitMedia isValid method
     public boolean isValid() {
         // Check sample name is correct / exists
         // make sure track exists
@@ -61,4 +64,9 @@ public class ESFitMedia {
         this.endLocation = endLocation;
     }
 
+    @Override
+    public String toString() {
+        return "Sample: " + sampleName + "\nTrackNumber: " + trackNumber +
+                "\nStart: " + startLocation + "\nEnd: " + endLocation;
+    }
 }

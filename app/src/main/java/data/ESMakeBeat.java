@@ -1,9 +1,12 @@
 package data;
 
+import java.io.Serializable;
+
 /**
  * Created by davidhendon on 11/19/14.
  */
-public class ESMakeBeat {
+public class ESMakeBeat implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String sampleName;
     private int track;
     private double startMeasure;

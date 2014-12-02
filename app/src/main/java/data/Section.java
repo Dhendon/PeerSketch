@@ -2,23 +2,30 @@ package data;
 
 import android.util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class Section {
+public class Section implements Serializable {
+    private static final long serialVersionUID = 6L;
     private List<ForLoop> forLoops;
     private List<IfStatement> ifStatements;
     private List<ESSetEffect> effects;
     private List<ESFitMedia> fitMedias;
     private List<ESMakeBeat> makeBeats;
     private List<Pair<Integer, Integer>> activeMeasures; // TODO: update this when parameters are changed
-    private String sample; // TODO: replace with MediaPlayer file
+    //private String sample; // TODO: replace with MediaPlayer file
+    private String name;
+    private int sectionNumber;
+    private int tempoBPM;
 
-    public Section(String sample) {
-        this.sample = sample;
+    public Section(String name) {
+        this.name = name;
+        // TODO Change this later.
+        tempoBPM = 120;
         forLoops = new ArrayList<ForLoop>();
         ifStatements = new ArrayList<IfStatement>();
         effects = new ArrayList<ESSetEffect>();
@@ -109,11 +116,35 @@ public class Section {
         return activeMeasures;
     }
 
-    public String getSample() {
-        return sample;
+    public String getName() {
+        return name;
     }
 
-    public void setSample(String sample) {
-        this.sample = sample;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getTempoBPM() {
+        return tempoBPM;
+    }
+
+    public void setTempoBPM(int tempoBPM) {
+        this.tempoBPM = tempoBPM;
+    }
+
+    @Override
+    public String toString() {
+        return "Section{" +
+                "name='" + name + '\'' +
+                ", fitMedias=" + fitMedias +
+                '}';
+    }
+
+    public int getSectionNumber() {
+        return sectionNumber;
+    }
+
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
     }
 }

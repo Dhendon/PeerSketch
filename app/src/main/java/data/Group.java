@@ -1,5 +1,6 @@
 package data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,8 @@ import java.util.List;
  * Created by davidhendon on 11/16/14.
  * This is a holder for a number of sections.
  */
-public class Group {
+public class Group implements Serializable {
+    private static final long serialVersionUID = 4L;
     List<Section> sections;
     String description;
 

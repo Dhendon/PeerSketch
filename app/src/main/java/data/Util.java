@@ -4,13 +4,16 @@ package data;
  * Created by davidhendon on 11/20/14.
  */
 public class Util {
+    // TODO: Update these samples to the actual ones we'll be using.
+    public static final String[] DEFAULT_SAMPLES = {"DUBSTEP", "EIGHTBIT", "ELECTRO", "HIPHOP",
+            "HOUSE", "TECHNO"};
+    public static final int DEFAULT_TEMPO_BPM = 120;
+    public static final int DEFAULT_PHRASE_LENGTH = 8;
     //TODO: determine which are feasible to implement
     static final String[] EFFECTS = {"PITCHSHIFT", "VOLUME", "EQ3BAND"};
     static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
             {"LOWGAIN", "LOWFREQ", "MIDGAIN", "MIDFREQ", "HIGHGAIN", "HIGHFREQ"}};
     static final String[] CONDITIONALS = {"<", "<=", "=", "!=", ">=", ">"};
-    // TODO: Update these samples to the actual ones we'll be using.
-    String[] DefaultSamples = {"DUBSTEP", "EIGHTBIT", "ELECTRO", "HIPHOP", "HOUSE", "TECHNO"};
 
     // TODO: Update these effect indexes with the EFFECTS array and add mapping to settings
     public interface Effects {
@@ -44,6 +47,17 @@ public class Util {
         static final public int GREATERTHAN = 5;
     }
 
-    // TODO: Include default beat patterns?
-
+    public interface BundleKeys {
+        static final String FITMEDIA = "fitmedia";
+        static final String MAKEBEAT = "makebeat";
+        static final String SETEFFECT = "seteffect";
+        static final String FORLOOP = "forloop";
+        static final String GROUP = "group";
+        static final String IFSTATEMENT = "ifstatement";
+        static final String SECTION = "section";
+        static final String SECTION_NAME = "section-name";
+        static final String SECTION_NUMBER = "section-number";
+        static final String SONG = "song";
+        static final String SONGLIBRARY = "songlibrary";
+    }    // TODO: Include default beat patterns?
 }

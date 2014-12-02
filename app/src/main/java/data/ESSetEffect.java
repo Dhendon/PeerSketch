@@ -1,9 +1,12 @@
 package data;
 
+import java.io.Serializable;
+
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class ESSetEffect {
+public class ESSetEffect implements Serializable {
+    private static final long serialVersionUID = 2L;
     private int effectIndex;
     private int trackNumber;
     private double measure;
@@ -47,7 +50,7 @@ public class ESSetEffect {
         this.measure = measure;
     }
 
-    // TODO Implement this method.
+    // TODO Implement this SetEffect isValid method.
     public boolean isValid() {
         return true;
     }

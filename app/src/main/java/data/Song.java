@@ -1,5 +1,6 @@
 package data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,8 @@ import java.util.List;
  * Created by davidhendon on 10/28/14.
  * This is the representation of a Song object and will be used to generate a block.
  */
-public class Song {
+public class Song implements Serializable {
+    private static final long serialVersionUID = 7L;
     List<Section> sections;
     List<ForLoop> forLoops;
     List<IfStatement> ifStatements;
@@ -22,7 +24,7 @@ public class Song {
     }
 
     public Song(int tempoBPM) {
-        this(tempoBPM,8,"");
+        this(tempoBPM, 8, "");
     }
 
     public Song(int tempoBPM, int phraseLength, String description) {
@@ -98,5 +100,45 @@ public class Song {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Section> getSections() {
+        return sections;
+    }
+
+    public void setSections(List<Section> sections) {
+        this.sections = sections;
+    }
+
+    public List<ForLoop> getForLoops() {
+        return forLoops;
+    }
+
+    public void setForLoops(List<ForLoop> forLoops) {
+        this.forLoops = forLoops;
+    }
+
+    public List<IfStatement> getIfStatements() {
+        return ifStatements;
+    }
+
+    public void setIfStatements(List<IfStatement> ifStatements) {
+        this.ifStatements = ifStatements;
+    }
+
+    public List<ESSetEffect> getEffects() {
+        return effects;
+    }
+
+    public void setEffects(List<ESSetEffect> effects) {
+        this.effects = effects;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 }

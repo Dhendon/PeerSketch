@@ -1,10 +1,12 @@
 package data;
 
+import java.io.Serializable;
+
 /**
  * Created by davidhendon on 11/19/14.
  */
-public class IfStatement {
-
+public class IfStatement implements Serializable {
+    private static final long serialVersionUID = 5L;
     String firstItem;
     String secondItem;
     String conditional;
