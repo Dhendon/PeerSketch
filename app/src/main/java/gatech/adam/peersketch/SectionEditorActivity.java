@@ -6,7 +6,9 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -81,10 +83,9 @@ public class SectionEditorActivity extends FragmentActivity {
             public void onClick(View v) {
                 if (currentSection.getFitMedias().isEmpty()) {
                     // TODO: Remove this after demo
-                    ESAudio.play(new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0, 1), context, 120, 8);
+                    localPlay(new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0, 1), 120, 8);
                 } else {
-                    ESAudio.play(currentSection.getFitMedias().get(0),
-                            context, songBPM, songPhraseLength);
+                    localPlay(currentSection.getFitMedias().get(0), songBPM, songPhraseLength);
                 }
 
             }
@@ -154,6 +155,75 @@ public class SectionEditorActivity extends FragmentActivity {
         startActivity(songIntent);
     }
 
+    private boolean localPlay(ESFitMedia fitMedia, int tempoBPM, int phraseLength) {
+        if (fitMedia == null) {
+            Log.i(TAG, "play - fitMedia is null");
+            fitMedia = new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0.5, 1);
+            //TODO: make this less jank
+            //return false;
+        }
+        if (context == null) {
+            Log.i(TAG, "play - context is null");
+            return false;
+        }
+        if (!fitMedia.isValid()) {
+            Log.i(TAG, "play - fitMedia is invalid, fitmedia=" + fitMedia.toString());
+            return false;
+        }
+
+        int sampleId = Util.getSampleIDFromName(fitMedia.getSampleName());
+        if (sampleId == -1) {
+            Log.i(TAG, "play - sampleID is invalid, name=" + fitMedia.getSampleName());
+            return false;
+        }
+
+        //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        final MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.synth_harp_1);
+        Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
+
+        // Schedule when it needs to be played
+        int startTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getStartLocation(),
+                tempoBPM, phraseLength);
+        int endTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getEndLocation(),
+                tempoBPM, phraseLength);
+        final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+        // TODO: Add in for loops / conditionals affecting the playing of the song.
+        // Play it
+
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            Log.i(TAG, "MediaPlayer is playing, stopping it");
+        }
+            /*
+             Ignore the error message: Should have subtitle controller already set
+             it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
+             */
+        if (startTimeMilliseconds > 0) {
+            mediaPlayer.seekTo(startTimeMilliseconds);
+            Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
+        }
+
+        mediaPlayer.start();
+        Log.i(TAG, "MediaPlayer starting at " + startTimeMilliseconds + "ms");
+        int tickMS = 500;
+        CountDownTimer playTimer = new CountDownTimer(durationMilliseconds, tickMS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Log.i(TAG, "MediaPlayer still playing after " +
+                        (durationMilliseconds - millisUntilFinished) + "ms");
+            }
+
+            @Override
+            public void onFinish() {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
+            }
+        }.start();
+        return true;
+
+    }
+
     public static class CreateFitMediaDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -170,22 +240,29 @@ public class SectionEditorActivity extends FragmentActivity {
                                     R.id.editTextStartLocation);
                             EditText endEditText = (EditText) prompt.findViewById(
                                     R.id.editTextEndLocation);
-                            ArrayAdapter adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
-                                    android.R.layout.simple_spinner_item, Util.DEFAULT_SAMPLES);
+                            ArrayAdapter<CharSequence> adapter =
+                                    ArrayAdapter.createFromResource(getActivity().getApplicationContext(),
+                                            R.array.default_samples, android.R.layout.simple_spinner_item);
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                             samplesSpinner.setAdapter(adapter);
                             String rawStartLocation = startEditText.getText().toString();
                             String rawEndLocation = endEditText.getText().toString();
-                            double start = Double.parseDouble(rawStartLocation);
-                            double end = Double.parseDouble(rawEndLocation);
-
                             String sampleName = samplesSpinner.getSelectedItem().toString();
-                            if (sampleName.equals("")) {
-                                sampleName = "Default Sample";
+                            if (!rawStartLocation.equals("") && !rawEndLocation.equals("")
+                                    && !sampleName.equals("")) {
+                                double start = Double.parseDouble(rawStartLocation);
+                                double end = Double.parseDouble(rawEndLocation);
+                                Toast.makeText(getActivity().getApplicationContext(), "Made FitMedia!",
+                                        Toast.LENGTH_SHORT).show();
+                                recentFitMedia = new ESFitMedia(sampleName, 0, start, end);
+                                Log.i(TAG, "recentFitMedia set:" + recentFitMedia.toString());
+                            } else {
+                                Toast.makeText(getActivity().getApplicationContext(),
+                                        "Invalid parameters", Toast.LENGTH_SHORT).show();
+                                Log.i(TAG, "Unable to create FitMedia");
                             }
-                            Toast.makeText(getActivity().getApplicationContext(), "Made FitMedia!",
-                                    Toast.LENGTH_SHORT);
-                            recentFitMedia = new ESFitMedia(sampleName, 0, start, end);
-                            Log.i(TAG, "recentFitMedia set:" + recentFitMedia.toString());
+
+
                         }
                     })
                     .setNegativeButton("Forget it", new DialogInterface.OnClickListener() {
@@ -199,4 +276,6 @@ public class SectionEditorActivity extends FragmentActivity {
             return builder.create();
         }
     }
+
+
 }

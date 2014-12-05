@@ -1,12 +1,18 @@
 package data;
 
+import android.util.Log;
+
+import gatech.adam.peersketch.R;
+
 /**
  * Created by davidhendon on 11/20/14.
  */
 public class Util {
-    // TODO: Update these samples to the actual ones we'll be using.
-    public static final String[] DEFAULT_SAMPLES = {"DUBSTEP", "EIGHTBIT", "ELECTRO", "HIPHOP",
-            "HOUSE", "TECHNO"};
+    public static final int[] DEFAULT_SAMPLE_IDS = {R.raw.synth_harp_1, R.raw.clap_1,
+            R.raw.drumpad_1, R.raw.electro_1, R.raw.electro_2, R.raw.electro_3,
+            R.raw.hi_hats_1, R.raw.percussion_1, R.raw.percussion_2};
+    public static final String[] DEFAULT_SAMPLES = {"Synth Harp", "Clap", "Drumpad", "Electro 1",
+            "Electro 2", "Electro 3", "Hi Hats", "Percussion 1", "Percussion 2"};
     public static final int DEFAULT_TEMPO_BPM = 120;
     public static final int DEFAULT_PHRASE_LENGTH = 8;
     //TODO: determine which are feasible to implement
@@ -14,6 +20,38 @@ public class Util {
     static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
             {"LOWGAIN", "LOWFREQ", "MIDGAIN", "MIDFREQ", "HIGHGAIN", "HIGHFREQ"}};
     static final String[] CONDITIONALS = {"<", "<=", "=", "!=", ">=", ">"};
+    // TODO: Update these samples to the actual ones we'll be using.
+    private static String TAG = "util";
+
+    public static int getLocationTimeMS(double location, int tempoBPM, int phraseLength) {
+        // measures --> beats
+        final int MINUTES_TO_MS = 60000;
+        double numBeats = location * phraseLength;
+        // BPM --> minutes --> milliseconds
+        return (int) (numBeats / tempoBPM * MINUTES_TO_MS);
+    }
+
+    public static int getSampleIDFromName(String sampleName) {
+        for (int i = 0; i < Util.DEFAULT_SAMPLES.length; i++) {
+            if (Util.DEFAULT_SAMPLES[i].equals(sampleName)) {
+                return Util.DEFAULT_SAMPLE_IDS[i];
+            }
+        }
+        Log.i(TAG, "Attempted to play Unknown Sample:" + sampleName);
+        return -1;
+    }
+
+    public interface DefaultSamples {
+        public static final int SYNTH_HARP = 0;
+        public static final int CLAP = 1;
+        public static final int DRUMPAD = 2;
+        public static final int ELECTRO1 = 3;
+        public static final int ELECTRO2 = 4;
+        public static final int ELECTRO3 = 5;
+        public static final int HI_HATS = 6;
+        public static final int PERCUSSION1 = 7;
+        public static final int PERCUSSION2 = 8;
+    }
 
     // TODO: Update these effect indexes with the EFFECTS array and add mapping to settings
     public interface Effects {

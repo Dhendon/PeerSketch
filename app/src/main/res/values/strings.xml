@@ -14,5 +14,16 @@
     <string name="title_activity_section_editor">SectionEditorActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_song_editor">SongEditorActivity</string>
-
+    <string-array name="default_samples">
+        <item>"Synth Harp"</item>
+        <item>"Clap"</item>
+        <item>"Drum Pad"</item>
+        <item>"Electro 1"</item>
+        <item>"Electro 2"</item>
+        <item>"Electro 3"</item>
+        <item>"Hi Hats"</item>
+        <item>"Organ"</item>
+        <item>"Percussion 1"</item>
+        <item>"Percussion 2"</item>
+    </string-array>
 </resources>

@@ -5,11 +5,8 @@ import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.util.Log;
 
-import java.io.IOException;
-
 import data.ESFitMedia;
 import data.Util;
-import gatech.adam.peersketch.R;
 
 /**
  * Created by davidhendon on 11/16/14.
@@ -25,7 +22,7 @@ public class ESAudio {
     public static boolean play(ESFitMedia fitMedia, Context context, int tempoBPM, int phraseLength) {
         if (fitMedia == null) {
             Log.i(TAG, "play - fitMedia is null");
-            fitMedia = new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0, 1);
+            fitMedia = new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0.1, 1);
             //TODO: make this less jank
             //return false;
         }
@@ -40,49 +37,39 @@ public class ESAudio {
 
         // Get Sample
         boolean isDefaultSample = false;
-        for (String sampleName : Util.DEFAULT_SAMPLES) {
-            if (sampleName.equals(fitMedia.getSampleName())) {
+        int sampleId = -1;
+        for (int i = 0; i < Util.DEFAULT_SAMPLES.length; i++) {
+            if (Util.DEFAULT_SAMPLES[i].equals(fitMedia.getSampleName())) {
                 isDefaultSample = true;
+                sampleId = Util.DEFAULT_SAMPLE_IDS[i];
                 break;
             }
         }
-
-        int sampleId = -1;
-        if (isDefaultSample) {
-            // Locate the file
-            //String filePath = "/samples/" + fitMedia.getSampleName();
-            // TODO: There has to be a better way to do this.
-            // TODO: Replace this with selected samples.
-            if (fitMedia.getSampleName().equals(Util.DEFAULT_SAMPLES[1])) {
-                sampleId = R.raw.test_cbr;
-            } else if (fitMedia.getSampleName().equals(Util.DEFAULT_SAMPLES[2])) {
-                sampleId = R.raw.sample2;
-            } else if (fitMedia.getSampleName().equals(Util.DEFAULT_SAMPLES[3])) {
-                sampleId = R.raw.sample3;
-            } else {
-                sampleId = R.raw.sample4;
-            }
-        } else {
+        if (!isDefaultSample) {
             // TODO: handle user imported samples
             return false;
         }
 
         final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        Log.i(TAG, "Created MediaPlayer - " + mediaPlayer.toString());
 
         // Schedule when it needs to be played
-        int startTimeMilliseconds = getLocationTimeMS(fitMedia.getStartLocation(),
+        int startTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getStartLocation(),
                 tempoBPM, phraseLength);
-        int endTimeMilliseconds = getLocationTimeMS(fitMedia.getEndLocation(),
+        int endTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getEndLocation(),
                 tempoBPM, phraseLength);
-        int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+        final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
         // TODO: Add in for loops / conditionals affecting the playing of the song.
         // Play it
-        try {
+        /*try {
             mediaPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
+        }*/
+        if (startTimeMilliseconds > 0) {
+            mediaPlayer.seekTo(startTimeMilliseconds);
         }
-        mediaPlayer.seekTo(startTimeMilliseconds);
+        Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
         mediaPlayer.start();
         // dear jesus this is hacky..
         CountDownTimer playTimer = new CountDownTimer(durationMilliseconds, durationMilliseconds) {
@@ -93,16 +80,20 @@ public class ESAudio {
             @Override
             public void onFinish() {
                 mediaPlayer.stop();
+                Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
             }
         }.start();
+        mediaPlayer.reset();
+        mediaPlayer.release();
         return true;
-    }
 
-    private static int getLocationTimeMS(double location, int tempoBPM, int phraseLength) {
-        // measures --> beats
-        final int MINUTES_TO_MS = 60000;
-        double numBeats = location * phraseLength;
-        // BPM --> minutes --> milliseconds
-        return (int) (numBeats / tempoBPM * MINUTES_TO_MS);
+        /* MEDIAPLAYER STANDARD
+        if(mp!=null) {
+        if(mp.isPlaying())
+            mp.stop();
+        mp.reset();
+        mp.release();
+        mp=null; }
+         */
     }
 }
