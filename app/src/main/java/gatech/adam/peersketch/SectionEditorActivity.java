@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -44,6 +45,7 @@ public class SectionEditorActivity extends FragmentActivity {
     private int songBPM = Util.DEFAULT_TEMPO_BPM;
     private int songPhraseLength = Util.DEFAULT_PHRASE_LENGTH;
     private Context context = this;
+    private ViewGroup viewGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,12 +207,11 @@ public class SectionEditorActivity extends FragmentActivity {
 
         mediaPlayer.start();
         Log.i(TAG, "MediaPlayer starting at " + startTimeMilliseconds + "ms");
-        int tickMS = 500;
-        CountDownTimer playTimer = new CountDownTimer(durationMilliseconds, tickMS) {
+        CountDownTimer playTimer = new CountDownTimer(durationMilliseconds, durationMilliseconds) {
             @Override
             public void onTick(long millisUntilFinished) {
-                Log.i(TAG, "MediaPlayer still playing after " +
-                        (durationMilliseconds - millisUntilFinished) + "ms");
+                //Log.i(TAG, "MediaPlayer still playing after " +
+                //        (durationMilliseconds - millisUntilFinished) + "ms");
             }
 
             @Override
@@ -230,21 +231,25 @@ public class SectionEditorActivity extends FragmentActivity {
             // Use the Builder class for convenient dialog construction
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             LayoutInflater inflater = getActivity().getLayoutInflater();
+            // Null Root View is acceptable here because AlertDialog replaces it anyway.
             final View prompt = inflater.inflate(R.layout.fragment_fitmedia_dialog, null);
+            // Setup UI elements
+            final Spinner samplesSpinner = (Spinner) prompt.findViewById(
+                    R.id.spinnerSamples);
+            ArrayAdapter<CharSequence> adapter =
+                    ArrayAdapter.createFromResource(getActivity().getBaseContext(),
+                            R.array.default_samples, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            samplesSpinner.setAdapter(adapter);
+            // TODO add in the ability to add custom samples -- in final UI.
+            final EditText startEditText = (EditText) prompt.findViewById(
+                    R.id.editTextStartLocation);
+            final EditText endEditText = (EditText) prompt.findViewById(
+                    R.id.editTextEndLocation);
+
             builder.setTitle("Create New FitMedia")
                     .setPositiveButton("Make it so!", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Spinner samplesSpinner = (Spinner) prompt.findViewById(
-                                    R.id.spinnerSamples);
-                            EditText startEditText = (EditText) prompt.findViewById(
-                                    R.id.editTextStartLocation);
-                            EditText endEditText = (EditText) prompt.findViewById(
-                                    R.id.editTextEndLocation);
-                            ArrayAdapter<CharSequence> adapter =
-                                    ArrayAdapter.createFromResource(getActivity().getApplicationContext(),
-                                            R.array.default_samples, android.R.layout.simple_spinner_item);
-                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            samplesSpinner.setAdapter(adapter);
                             String rawStartLocation = startEditText.getText().toString();
                             String rawEndLocation = endEditText.getText().toString();
                             String sampleName = samplesSpinner.getSelectedItem().toString();
@@ -252,7 +257,8 @@ public class SectionEditorActivity extends FragmentActivity {
                                     && !sampleName.equals("")) {
                                 double start = Double.parseDouble(rawStartLocation);
                                 double end = Double.parseDouble(rawEndLocation);
-                                Toast.makeText(getActivity().getApplicationContext(), "Made FitMedia!",
+                                Toast.makeText(getActivity().getApplicationContext(),
+                                        "Made FitMedia! (" + rawStartLocation + ", " + rawEndLocation + ")",
                                         Toast.LENGTH_SHORT).show();
                                 recentFitMedia = new ESFitMedia(sampleName, 0, start, end);
                                 Log.i(TAG, "recentFitMedia set:" + recentFitMedia.toString());
