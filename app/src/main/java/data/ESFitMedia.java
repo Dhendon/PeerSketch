@@ -66,7 +66,6 @@ public class ESFitMedia implements Serializable {
 
     @Override
     public String toString() {
-        return "Sample: " + sampleName + "\nTrackNumber: " + sectionNumber +
-                "\nStart: " + startLocation + "\nEnd: " + endLocation;
+        return sampleName + " (" + startLocation + "," + endLocation + ")";
     }
 }

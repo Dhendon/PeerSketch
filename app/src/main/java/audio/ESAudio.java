@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.widget.Toast;
 
 import data.ESFitMedia;
 import data.Util;
@@ -11,10 +12,12 @@ import data.Util;
 /**
  * Created by davidhendon on 11/16/14.
  */
-public class ESAudio {
+public class ESAudio extends Thread {
     // TODO: recreate ES Audio functionality using MediaPlayer
     public static final String TAG = "esaudio";
-
+    // This is in response to the imperfect scheduler timing.
+    // TODO: replace this with noisy tick readings
+    private static final int TICK_MS = 10;
     /**
      * @param fitMedia
      * @return Returns true when the section can be successfully played, false otherwise.
@@ -46,9 +49,9 @@ public class ESAudio {
         Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
 
         // Schedule when it needs to be played
-        int startTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getStartLocation(),
+        final int startTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getStartLocation(),
                 tempoBPM, phraseLength);
-        int endTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getEndLocation(),
+        final int endTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getEndLocation(),
                 tempoBPM, phraseLength);
         final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
         // TODO: Add in for loops / conditionals affecting the playing of the song.
@@ -62,18 +65,27 @@ public class ESAudio {
              Ignore the error message: Should have subtitle controller already set
              it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
              */
-        if (startTimeMilliseconds > 0) {
-            mediaPlayer.seekTo(startTimeMilliseconds);
-            Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
-        }
 
-        mediaPlayer.start();
-        Log.i(TAG, "MediaPlayer starting at " + startTimeMilliseconds + "ms");
-        CountDownTimer playTimer = new CountDownTimer(durationMilliseconds, durationMilliseconds) {
+        // mediaPlayer.start();
+        if (Util.DEBUG_MODE) {
+            Toast.makeText(context, "Starting Timer now!", Toast.LENGTH_SHORT).show();
+        }
+        Log.i(TAG, "Theoretically playing from (" + startTimeMilliseconds
+                + ", " + endTimeMilliseconds + ")");
+        // Set to 100ms tick right now, because it doesn't tick exact enough to work correctly.
+        CountDownTimer playTimer = new CountDownTimer(endTimeMilliseconds,
+                TICK_MS) {
             @Override
             public void onTick(long millisUntilFinished) {
-                //Log.i(TAG, "MediaPlayer still playing after " +
-                //        (durationMilliseconds - millisUntilFinished) + "ms");
+                if (!mediaPlayer.isPlaying() && millisUntilFinished <= durationMilliseconds) {
+                    if (startTimeMilliseconds > 0) {
+                        mediaPlayer.seekTo(startTimeMilliseconds);
+                        Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
+                    }
+                    mediaPlayer.start();
+                    Log.i(TAG, "MediaPlayer starting at " +
+                            (endTimeMilliseconds - millisUntilFinished) + "ms");
+                }
             }
 
             @Override

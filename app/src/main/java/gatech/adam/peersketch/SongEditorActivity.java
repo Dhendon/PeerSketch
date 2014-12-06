@@ -9,13 +9,16 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -26,12 +29,22 @@ import data.Util;
 
 public class SongEditorActivity extends FragmentActivity {
 
+    private static final String TAG = "song-editor";
     private static String sectionName;
     private static Song currentSong;
     private Button mButtonCreateSection;
     private ListView mListViewSongItems;
     private Context context = this;
     private ArrayAdapter<String> sampleAdapter;
+
+    private static boolean sectionNameTaken(String name) {
+        for (Section section : currentSong.getSections()) {
+            if (section.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,25 +71,56 @@ public class SongEditorActivity extends FragmentActivity {
             public void onClick(View v) {
                 sectionName = "";
                 promptCreatedSectionName();
-                // TODO: Return this to normal once it's working, right now it keeps being empty.
-                if (sectionName.equals("")) { //user inputted name
-                    sectionName = "New Section";
-                }
                 // Add section to this song
                 // TODO: use tap location data
                 refreshListUI();
-                // Go to Section Editor
-                /*
-                Intent sectionEditorIntent = new Intent(context, SectionEditorActivity.class);
-                sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
-                sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NUMBER, trackNumber);
+            }
+        });
+        mListViewSongItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent sectionEditorIntent = new Intent(context,
+                        SectionEditorActivity.class);
+                sectionEditorIntent.putExtra(Util.BundleKeys.SECTION,
+                        currentSong.getSections().get(position));
                 startActivity(sectionEditorIntent);
-                finish();
-                */
             }
         });
     }
 
+    // TODO: Check for sections of the same name...
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent = getIntent();
+        if (intent.hasExtra(Util.BundleKeys.SECTION)) {
+            Section editedSection = (Section) intent.getSerializableExtra(Util.BundleKeys.SECTION);
+            int thisSectionIndex = editedSection.getSectionNumber();
+            List<Section> sections = currentSong.getSections();
+            Section expectedSection = sections.get(thisSectionIndex);
+            if (expectedSection.getName().equals(editedSection.getName())) {
+                // TODO: Remember if this just edits a local copy or not..
+                currentSong.getSections().set(thisSectionIndex, editedSection);
+            } else {
+                Log.e(TAG, "Attempted to add mismatched edited Section name: "
+                        + editedSection.getName() + " Index:" + thisSectionIndex);
+                for (int i = 0; i < sections.size(); i++) {
+                    if (sections.get(i).getName().equals(editedSection.getName())) {
+                        Log.i(TAG, "Found section with same name at index:" + i
+                                + " instead of index:" + thisSectionIndex);
+                        editedSection.setSectionNumber(i);
+                        currentSong.getSections().set(i, editedSection);
+                    }
+                }
+                Section updatedSection = currentSong.getSections().get(editedSection.getSectionNumber());
+                if (!updatedSection.equals(editedSection)) {
+                    Log.e(TAG, "Sections were not updated successfully - unknown section: "
+                            + editedSection.toString());
+                }
+            }
+            refreshListUI();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -106,6 +150,7 @@ public class SongEditorActivity extends FragmentActivity {
         newFragment.show(getFragmentManager(), "createSection");
     }
 
+    // TODO: Replace with ArrayAdapter.add(...) because this is inefficient
     public void refreshListUI() {
         List<Section> sections = currentSong.getSections();
         String[] sectionItems = new String[sections.size()];
@@ -142,6 +187,7 @@ public class SongEditorActivity extends FragmentActivity {
                     .setPositiveButton("Create!", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             sectionName = input.getText().toString();
+                            if (!sectionNameTaken(sectionName)) {
                             // TODO: fix this getting cleared.
                             int trackNumber = currentSong.getSections().size() - 1;
                             currentSong.addSection(new Section(sectionName), trackNumber);
@@ -150,6 +196,14 @@ public class SongEditorActivity extends FragmentActivity {
                             sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
                             sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NUMBER, trackNumber);
                             startActivity(sectionEditorIntent);
+                            } else {
+                                Toast.makeText(getActivity().getApplicationContext(),
+                                        "Sorry! Section name taken, please try again with a new name",
+                                        Toast.LENGTH_LONG).show();
+                                Log.i(TAG, "Unable to create new section with name: "
+                                        + sectionName + " - Duplicate Name");
+                            }
+
                         }
                     })
                     .setNegativeButton("Nevermind.", new DialogInterface.OnClickListener() {
@@ -162,4 +216,5 @@ public class SongEditorActivity extends FragmentActivity {
             return builder.create();
         }
     }
+
 }

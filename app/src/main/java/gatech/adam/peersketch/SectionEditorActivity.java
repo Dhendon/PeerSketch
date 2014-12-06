@@ -20,6 +20,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import audio.ESAudio;
 import data.ESFitMedia;
 import data.Section;
 import data.Util;
@@ -51,11 +52,14 @@ public class SectionEditorActivity extends FragmentActivity
             String sectionName = intent.getStringExtra(Util.BundleKeys.SECTION_NAME);
             currentSection = new Section(sectionName);
             setTitle(sectionName);
+        } else if (intent.hasExtra(Util.BundleKeys.SECTION)) {
+            currentSection = (Section) intent.getSerializableExtra(Util.BundleKeys.SECTION);
         } else {
             currentSection = new Section("Section Name Goes Here");
             currentSection.setSectionNumber(0);
         }
         sectionNumber = currentSection.getSectionNumber();
+
         // Sets up UI
         setTitle(currentSection.getName());
         mListView = (ListView) findViewById(R.id.listViewSectionItems_dumbUI);
@@ -67,6 +71,7 @@ public class SectionEditorActivity extends FragmentActivity
         }
         mSectionItemsAdapter = new ArrayAdapter<String>(context,
                 android.R.layout.simple_spinner_item, sectionItems);
+        // TODO: call refreshUI() here
         mListView.setAdapter(mSectionItemsAdapter);
         mFitMediaButton = (Button) findViewById(R.id.buttonFitMedia_dumbUI);
         mPlayButton = (Button) findViewById(R.id.buttonPlaySection_dumbUI);
@@ -94,7 +99,8 @@ public class SectionEditorActivity extends FragmentActivity
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO: trigger editing instead of just playing here.
                 ESFitMedia selectedFitMedia = currentSection.getFitMedias().get(position);
-                localPlay(selectedFitMedia, songBPM, songPhraseLength);
+                //localPlay(selectedFitMedia, songBPM, songPhraseLength);
+                ESAudio.play(selectedFitMedia, context, songBPM, songPhraseLength);
                 Log.i(TAG, "Playing fitMedia at position: " + position);
             }
         });
@@ -132,6 +138,7 @@ public class SectionEditorActivity extends FragmentActivity
         newFragment.show(getFragmentManager(), "createFitMedia");
     }
 
+    // TODO: Replace with ArrayAdapter.add(...) version because this is slow.
     public void refreshUI() {
         //mListView = (ListView) findViewById(R.id.listViewSectionItems_dumbUI);
         List<ESFitMedia> fitMedias = currentSection.getFitMedias();
@@ -158,6 +165,14 @@ public class SectionEditorActivity extends FragmentActivity
         startActivity(songIntent);
     }
 
+    /**
+     * DEPRECATED  -- REPLACE WITH ESAudio.play(...) immediately
+     *
+     * @param fitMedia
+     * @param tempoBPM
+     * @param phraseLength
+     * @return
+     */
     private boolean localPlay(ESFitMedia fitMedia, int tempoBPM, int phraseLength) {
         if (fitMedia == null) {
             Log.i(TAG, "play - fitMedia is null");
@@ -253,7 +268,8 @@ public class SectionEditorActivity extends FragmentActivity
     // TODO: Replace with threaded MediaPlayers
     private void playCurrentSection() {
         for (ESFitMedia fitMedia : currentSection.getFitMedias()) {
-            localPlay(fitMedia, songBPM, songPhraseLength);
+            //localPlay(fitMedia, songBPM, songPhraseLength);
+            ESAudio.play(fitMedia, context, songBPM, songPhraseLength);
         }
     }
 

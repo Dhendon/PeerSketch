@@ -16,6 +16,7 @@ public class Util {
     public static final int DEFAULT_TEMPO_BPM = 120;
     public static final int DEFAULT_PHRASE_LENGTH = 8;
     public static final int DROP_LOCATION = 0; // TODO: Remove this once drag and drop implemented
+    public static final boolean DEBUG_MODE = true;
     //TODO: determine which are feasible to implement
     static final String[] EFFECTS = {"PITCHSHIFT", "VOLUME", "EQ3BAND"};
     static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
