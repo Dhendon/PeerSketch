@@ -27,9 +27,9 @@ import data.Util;
 public class SongEditorActivity extends FragmentActivity {
 
     private static String sectionName;
+    private static Song currentSong;
     private Button mButtonCreateSection;
     private ListView mListViewSongItems;
-    private Song currentSong;
     private Context context = this;
     private ArrayAdapter<String> sampleAdapter;
 
@@ -64,15 +64,15 @@ public class SongEditorActivity extends FragmentActivity {
                 }
                 // Add section to this song
                 // TODO: use tap location data
-                int trackNumber = currentSong.getSections().size() - 1;
-                currentSong.addSection(new Section(sectionName), trackNumber);
                 refreshListUI();
                 // Go to Section Editor
+                /*
                 Intent sectionEditorIntent = new Intent(context, SectionEditorActivity.class);
                 sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
                 sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NUMBER, trackNumber);
                 startActivity(sectionEditorIntent);
                 finish();
+                */
             }
         });
     }
@@ -143,6 +143,13 @@ public class SongEditorActivity extends FragmentActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             sectionName = input.getText().toString();
                             // TODO: fix this getting cleared.
+                            int trackNumber = currentSong.getSections().size() - 1;
+                            currentSong.addSection(new Section(sectionName), trackNumber);
+                            Intent sectionEditorIntent = new Intent(getActivity().getApplicationContext(),
+                                    SectionEditorActivity.class);
+                            sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
+                            sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NUMBER, trackNumber);
+                            startActivity(sectionEditorIntent);
                         }
                     })
                     .setNegativeButton("Nevermind.", new DialogInterface.OnClickListener() {

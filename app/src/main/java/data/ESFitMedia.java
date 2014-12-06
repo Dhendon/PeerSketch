@@ -8,13 +8,13 @@ import java.io.Serializable;
 public class ESFitMedia implements Serializable {
     private static final long serialVersionUID = 0L;
     private String sampleName;
-    private int trackNumber;
+    private int sectionNumber;
     private double startLocation;
     private double endLocation;
 
-    public ESFitMedia(String sampleName, int trackNumber, double startLocation, double endLocation) {
+    public ESFitMedia(String sampleName, int sectionNumber, double startLocation, double endLocation) {
         this.sampleName = sampleName;
-        this.trackNumber = trackNumber;
+        this.sectionNumber = sectionNumber;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
     }
@@ -40,12 +40,12 @@ public class ESFitMedia implements Serializable {
         this.sampleName = sampleName;
     }
 
-    public int getTrackNumber() {
-        return trackNumber;
+    public int getSectionNumber() {
+        return sectionNumber;
     }
 
-    public void setTrackNumber(int trackNumber) {
-        this.trackNumber = trackNumber;
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
     }
 
     public double getStartLocation() {
@@ -66,7 +66,7 @@ public class ESFitMedia implements Serializable {
 
     @Override
     public String toString() {
-        return "Sample: " + sampleName + "\nTrackNumber: " + trackNumber +
+        return "Sample: " + sampleName + "\nTrackNumber: " + sectionNumber +
                 "\nStart: " + startLocation + "\nEnd: " + endLocation;
     }
 }

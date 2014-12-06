@@ -16,8 +16,7 @@ public class Section implements Serializable {
     private List<ESSetEffect> effects;
     private List<ESFitMedia> fitMedias;
     private List<ESMakeBeat> makeBeats;
-    private List<Pair<Integer, Integer>> activeMeasures; // TODO: update this when parameters are changed
-    //private String sample; // TODO: replace with MediaPlayer file
+    private List<Pair<Double, Double>> activeMeasures; // TODO: update this when parameters are changed
     private String name;
     private int sectionNumber;
     private int tempoBPM;
@@ -31,7 +30,7 @@ public class Section implements Serializable {
         effects = new ArrayList<ESSetEffect>();
         fitMedias = new ArrayList<ESFitMedia>();
         makeBeats = new ArrayList<ESMakeBeat>();
-        activeMeasures = new ArrayList<Pair<Integer, Integer>>();
+        activeMeasures = new ArrayList<Pair<Double, Double>>();
     }
 
 
@@ -112,10 +111,6 @@ public class Section implements Serializable {
         return makeBeats;
     }
 
-    public List<Pair<Integer, Integer>> getActiveMeasures() {
-        return activeMeasures;
-    }
-
     public String getName() {
         return name;
     }
@@ -146,5 +141,25 @@ public class Section implements Serializable {
 
     public void setSectionNumber(int sectionNumber) {
         this.sectionNumber = sectionNumber;
+    }
+
+    public void clearAll() {
+        forLoops = new ArrayList<ForLoop>();
+        ifStatements = new ArrayList<IfStatement>();
+        effects = new ArrayList<ESSetEffect>();
+        fitMedias = new ArrayList<ESFitMedia>();
+        makeBeats = new ArrayList<ESMakeBeat>();
+        activeMeasures = new ArrayList<Pair<Double, Double>>();
+    }
+
+    public List<Pair<Double, Double>> calcActiveMeasures() {
+        ArrayList<Pair<Double, Double>> activeMeasures = new ArrayList<Pair<Double, Double>>();
+        for (ESFitMedia fitMedia : fitMedias) {
+            double startLocation = fitMedia.getStartLocation();
+            double endLocation = fitMedia.getEndLocation();
+            Pair<Double, Double> measureRange = new Pair<Double, Double>(startLocation, endLocation);
+            activeMeasures.add(measureRange);
+        }
+        return activeMeasures;
     }
 }

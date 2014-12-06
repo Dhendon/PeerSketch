@@ -10,11 +10,12 @@ import gatech.adam.peersketch.R;
 public class Util {
     public static final int[] DEFAULT_SAMPLE_IDS = {R.raw.synth_harp_1, R.raw.clap_1,
             R.raw.drumpad_1, R.raw.electro_1, R.raw.electro_2, R.raw.electro_3,
-            R.raw.hi_hats_1, R.raw.percussion_1, R.raw.percussion_2};
+            R.raw.hi_hats_1, R.raw.percussion_1, R.raw.percussion_2, R.raw.organ_1};
     public static final String[] DEFAULT_SAMPLES = {"Synth Harp", "Clap", "Drumpad", "Electro 1",
-            "Electro 2", "Electro 3", "Hi Hats", "Percussion 1", "Percussion 2"};
+            "Electro 2", "Electro 3", "Hi Hats", "Percussion 1", "Percussion 2", "Organ"};
     public static final int DEFAULT_TEMPO_BPM = 120;
     public static final int DEFAULT_PHRASE_LENGTH = 8;
+    public static final int DROP_LOCATION = 0; // TODO: Remove this once drag and drop implemented
     //TODO: determine which are feasible to implement
     static final String[] EFFECTS = {"PITCHSHIFT", "VOLUME", "EQ3BAND"};
     static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
@@ -51,6 +52,7 @@ public class Util {
         public static final int HI_HATS = 6;
         public static final int PERCUSSION1 = 7;
         public static final int PERCUSSION2 = 8;
+        public static final int ORGAN = 9;
     }
 
     // TODO: Update these effect indexes with the EFFECTS array and add mapping to settings

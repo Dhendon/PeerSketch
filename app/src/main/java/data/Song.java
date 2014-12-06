@@ -42,8 +42,10 @@ public class Song implements Serializable {
 
     public void addSection(Section section, int location) {
         if (validLocation(location, sections)) {
+            section.setSectionNumber(location);
             sections.add(location, section);
         } else {
+            section.setSectionNumber(0);
             sections.add(section);
         }
     }
