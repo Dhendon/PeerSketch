@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import audio.ESAudio;
 import data.Section;
 import data.Song;
 import data.Util;
@@ -84,6 +85,13 @@ public class SongEditorActivity extends FragmentActivity {
                 sectionEditorIntent.putExtra(Util.BundleKeys.SECTION,
                         currentSong.getSections().get(position));
                 startActivity(sectionEditorIntent);
+            }
+        });
+        mListViewSongItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                ESAudio.play(currentSong.getSections().get(position), context);
+                return true;
             }
         });
     }

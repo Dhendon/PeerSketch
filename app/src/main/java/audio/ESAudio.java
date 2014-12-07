@@ -4,9 +4,9 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.util.Log;
-import android.widget.Toast;
 
 import data.ESFitMedia;
+import data.Section;
 import data.Util;
 
 /**
@@ -22,7 +22,8 @@ public class ESAudio extends Thread {
      * @param fitMedia
      * @return Returns true when the section can be successfully played, false otherwise.
      */
-    public static boolean play(ESFitMedia fitMedia, Context context, int tempoBPM, int phraseLength) {
+    public static boolean play(ESFitMedia fitMedia, Context context, int tempoBPM,
+                               int phraseLength) {
         if (fitMedia == null) {
             Log.i(TAG, "play - fitMedia is null");
             fitMedia = new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0.5, 1);
@@ -65,14 +66,6 @@ public class ESAudio extends Thread {
              Ignore the error message: Should have subtitle controller already set
              it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
              */
-
-        // mediaPlayer.start();
-        if (Util.DEBUG_MODE) {
-            Toast.makeText(context, "Starting Timer now!", Toast.LENGTH_SHORT).show();
-        }
-        Log.i(TAG, "Theoretically playing from (" + startTimeMilliseconds
-                + ", " + endTimeMilliseconds + ")");
-        // Set to 100ms tick right now, because it doesn't tick exact enough to work correctly.
         CountDownTimer playTimer = new CountDownTimer(endTimeMilliseconds,
                 TICK_MS) {
             @Override
@@ -96,6 +89,21 @@ public class ESAudio extends Thread {
             }
         }.start();
         return true;
+    }
 
+    public static boolean play(Section section, Context context) {
+        if (!section.isValid()) {
+            Log.i(TAG, "Attempted to play invalid section, name:" + section.getName());
+            return false;
+        }
+
+        // TODO: Add in logic for ifStatements, forLoops, makeBeats and setEffects
+        for (ESFitMedia fitMedia : section.getFitMedias()) {
+            //localPlay(fitMedia, songBPM, songPhraseLength);
+            ESAudio.play(fitMedia, context, section.getTempoBPM(),
+                    section.getPhraseLengthMeasures());
+        }
+
+        return true;
     }
 }

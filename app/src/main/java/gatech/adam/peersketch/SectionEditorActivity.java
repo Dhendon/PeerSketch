@@ -3,6 +3,7 @@ package gatech.adam.peersketch;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -71,7 +72,7 @@ public class SectionEditorActivity extends FragmentActivity
         }
         mSectionItemsAdapter = new ArrayAdapter<String>(context,
                 android.R.layout.simple_spinner_item, sectionItems);
-        // TODO: call refreshUI() here
+        // TODO: call refreshListUI() here
         mListView.setAdapter(mSectionItemsAdapter);
         mFitMediaButton = (Button) findViewById(R.id.buttonFitMedia_dumbUI);
         mPlayButton = (Button) findViewById(R.id.buttonPlaySection_dumbUI);
@@ -89,7 +90,7 @@ public class SectionEditorActivity extends FragmentActivity
                     Toast.makeText(context, "No Samples: Try making a FitMedia," +
                             " then hit play again", Toast.LENGTH_LONG).show();
                 } else {
-                    playCurrentSection();
+                    ESAudio.play(currentSection, context);
                 }
 
             }
@@ -102,6 +103,19 @@ public class SectionEditorActivity extends FragmentActivity
                 //localPlay(selectedFitMedia, songBPM, songPhraseLength);
                 ESAudio.play(selectedFitMedia, context, songBPM, songPhraseLength);
                 Log.i(TAG, "Playing fitMedia at position: " + position);
+            }
+        });
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                view.setBackgroundColor(Color.RED);
+                ESFitMedia removed = currentSection.getFitMedias().remove(position);
+                Toast.makeText(context, "Removed FitMedia: " + removed.toString(),
+                        Toast.LENGTH_SHORT).show();
+                // TODO Undo button for removal?
+                Log.i(TAG, "Removed Section Item:" + removed.toString());
+                refreshListUI();
+                return true;
             }
         });
     }
@@ -139,11 +153,13 @@ public class SectionEditorActivity extends FragmentActivity
     }
 
     // TODO: Replace with ArrayAdapter.add(...) version because this is slow.
-    public void refreshUI() {
+    public void refreshListUI() {
         //mListView = (ListView) findViewById(R.id.listViewSectionItems_dumbUI);
         List<ESFitMedia> fitMedias = currentSection.getFitMedias();
         if (fitMedias.isEmpty()) {
-            Log.i(TAG, "fitMedias empty in refreshUI()");
+            Log.i(TAG, "fitMedias empty in refreshListUI()");
+            mListView.setAdapter(new ArrayAdapter<String>(context,
+                    android.R.layout.simple_spinner_item, new String[0]));
             return;
         }
         String[] sectionItems = new String[fitMedias.size()];
@@ -163,6 +179,12 @@ public class SectionEditorActivity extends FragmentActivity
         Intent songIntent = new Intent(context, SongEditorActivity.class);
         songIntent.putExtra(Util.BundleKeys.SECTION, currentSection);
         startActivity(songIntent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshListUI();
     }
 
     /**
@@ -246,7 +268,7 @@ public class SectionEditorActivity extends FragmentActivity
         //mSectionItemsAdapter.add(value.toString());
         //mSectionItemsAdapter.notifyDataSetChanged();
         Log.i(TAG, "Added new FitMedia: " + value.toString());
-        refreshUI();
+        refreshListUI();
     }
 
 
@@ -264,13 +286,4 @@ public class SectionEditorActivity extends FragmentActivity
         // TODO: Splice together all items, instead of just fitMedias
         return allItems;
     }
-
-    // TODO: Replace with threaded MediaPlayers
-    private void playCurrentSection() {
-        for (ESFitMedia fitMedia : currentSection.getFitMedias()) {
-            //localPlay(fitMedia, songBPM, songPhraseLength);
-            ESAudio.play(fitMedia, context, songBPM, songPhraseLength);
-        }
-    }
-
 }

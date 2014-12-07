@@ -10,6 +10,7 @@ import java.util.List;
  * Created by davidhendon on 10/28/14.
  */
 public class Section implements Serializable {
+    // TODO: Implement parent instance variable, with a reference to song it's attached to.
     private static final long serialVersionUID = 6L;
     private List<ForLoop> forLoops;
     private List<IfStatement> ifStatements;
@@ -20,11 +21,13 @@ public class Section implements Serializable {
     private String name;
     private int sectionNumber;
     private int tempoBPM;
+    private int phraseLengthMeasures;
 
     public Section(String name) {
         this.name = name;
         // TODO Change this later.
         tempoBPM = 120;
+        phraseLengthMeasures = 8;
         forLoops = new ArrayList<ForLoop>();
         ifStatements = new ArrayList<IfStatement>();
         effects = new ArrayList<ESSetEffect>();
@@ -125,6 +128,14 @@ public class Section implements Serializable {
 
     public void setTempoBPM(int tempoBPM) {
         this.tempoBPM = tempoBPM;
+    }
+
+    public int getPhraseLengthMeasures() {
+        return phraseLengthMeasures;
+    }
+
+    public void setPhraseLengthMeasures(int phraseLengthMeasures) {
+        this.phraseLengthMeasures = phraseLengthMeasures;
     }
 
     @Override

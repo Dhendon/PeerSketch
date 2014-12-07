@@ -11,10 +11,8 @@
     <string name="action_settings">Settings</string>
     <string name="action_clear_section">Clear All</string>
     <string name="title_activity_current_song">CurrentSongActivity</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_section_editor">SectionEditorActivity</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_song_editor">SongEditorActivity</string>
+    <string name="title_activity_section_editor">Section Editor</string>
+    <string name="title_activity_song_editor">Song Editor</string>
     <string-array name="default_samples">
         <item>"Synth Harp"</item>
         <item>"Clap"</item>
