@@ -2,8 +2,10 @@ package gatech.adam.peersketch;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -11,6 +13,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class HomeActivity extends Activity
@@ -46,7 +54,7 @@ public class HomeActivity extends Activity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, SongListFragment.newInstance(position + 1))
                 .commit();
     }
 
@@ -103,22 +111,21 @@ public class HomeActivity extends Activity
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+    public static class SongListFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        private static final String ARG_SECTION_NUMBER = "section_number";
+        ArrayAdapter<String> songList_adapter;
+
+
+        public SongListFragment() {
         }
 
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public static SongListFragment newInstance(int sectionNumber) {
+            SongListFragment fragment = new SongListFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
@@ -126,9 +133,42 @@ public class HomeActivity extends Activity
         }
 
         @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_home, container, false);
+
+            String[] songTitlesArray = {
+                    "My Song 1",
+                    "My Song 2",
+                    "My Song 3"
+            };
+            List<String> songTitlesList = new ArrayList<String>(
+                    Arrays.asList(songTitlesArray));
+
+            songList_adapter = new ArrayAdapter<String>(getActivity(),
+                    R.layout.list_item_textview,
+                    R.id.list_item_textview,
+                    songTitlesList);
+
+            ListView listView = (ListView) rootView.findViewById(R.id.list_songs);
+            listView.setAdapter(songList_adapter);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String songTitle = songList_adapter.getItem(position);
+                    Intent intent = new Intent(getActivity(), CurrentSongActivity.class)
+                            .putExtra(Intent.EXTRA_TEXT, songTitle);
+
+                    startActivity(intent);
+                }
+            });
+
             return rootView;
         }
 

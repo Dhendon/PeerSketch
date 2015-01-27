@@ -1,16 +1,28 @@
 package gatech.adam.peersketch;
 
+import android.animation.Animator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ExpandableListAdapter;
+import android.widget.ListView;
+
+import com.melnykov.fab.FloatingActionButton;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import data.Song;
 
@@ -24,6 +36,7 @@ public class CurrentSongActivity extends Activity
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+    private NavigationDrawerFragment mSongDrawerFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -37,11 +50,16 @@ public class CurrentSongActivity extends Activity
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
 
-        // Set up the drawer.
+        mSongDrawerFragment = (NavigationDrawerFragment)
+                getFragmentManager().findFragmentById(R.id.drawer_song);
+
+        // Set up the root drawer; then set up song tools drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
+        mSongDrawerFragment.setUp(
+                R.id.drawer_song,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
@@ -83,7 +101,13 @@ public class CurrentSongActivity extends Activity
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.current_song, menu);
-            restoreActionBar();
+
+            Intent intent = this.getIntent();
+            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
+                mTitle = intent.getStringExtra(Intent.EXTRA_TEXT);
+                restoreActionBar();
+            }
+
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -133,6 +157,27 @@ public class CurrentSongActivity extends Activity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_current_song, container, false);
+
+            String[] currentSongArray = {
+                    "Track 1",
+                    "Track 2",
+                    "Track 3"
+            };
+            List<String> currentSongList = new ArrayList<String>(
+                    Arrays.asList(currentSongArray));
+
+            ArrayAdapter<String> adapter_currentSong = new ArrayAdapter<String>(
+                    getActivity(),
+                    R.layout.list_item_textview,
+                    R.id.list_item_textview,
+                    currentSongList);
+
+            ListView listView = (ListView) rootView.findViewById(R.id.list_currentSong);
+            listView.setAdapter(adapter_currentSong);
+
+            FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+            fab.attachToListView(listView);
+
             return rootView;
         }
 

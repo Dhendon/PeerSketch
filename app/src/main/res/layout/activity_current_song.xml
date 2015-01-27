@@ -4,6 +4,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:windowExitTransition="?android:slideEdge"
     tools:context="gatech.adam.peersketch.CurrentSongActivity">
 
     <!-- As the main content view, the view below consumes the entire
@@ -26,6 +27,14 @@
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        tools:layout="@layout/fragment_navigation_drawer2" />
+
+    <fragment
+        android:id="@+id/drawer_song"
+        android:name="gatech.adam.peersketch.NavigationDrawerFragment"
+        android:layout_width="@dimen/navigation_drawer_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
         tools:layout="@layout/fragment_navigation_drawer2" />
 
 </android.support.v4.widget.DrawerLayout>

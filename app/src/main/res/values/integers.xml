@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="LEFT">3</integer>
+    <integer name="TOP">48</integer>
+    <integer name="RIGHT">5</integer>
+    v<integer name="BOTTOM">80</integer>
+</resources>
