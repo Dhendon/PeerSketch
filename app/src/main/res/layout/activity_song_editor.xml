@@ -14,10 +14,18 @@
         android:layout_gravity="center_horizontal|top"
         android:orientation="vertical">
 
+        <gatech.adam.peersketch.Minimap
+            android:id="@+id/minimap"
+            android:layout_height="220dp"
+            android:layout_width="match_parent"
+            android:layout_gravity="top"
+            />
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
+              />
 
             <Button
                 android:id="@+id/buttonNewSection_dumbUI"
