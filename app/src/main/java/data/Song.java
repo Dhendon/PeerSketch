@@ -2,19 +2,21 @@ package data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by davidhendon on 10/28/14.
  * This is the representation of a Song object and will be used to generate a block.
  */
-public class Song implements Serializable {
+public class Song extends Group implements Serializable {
     private static final long serialVersionUID = 7L;
     List<Section> sections;
     List<ForLoop> forLoops;
     List<IfStatement> ifStatements;
     List<ESSetEffect> effects;
     List<Group> groups;
+    HashMap<String, String> variables;
     int tempoBPM;
     int phraseLength;
     String description;
@@ -50,6 +52,14 @@ public class Song implements Serializable {
         }
     }
 
+    public HashMap<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(HashMap<String, String> variables) {
+        this.variables = variables;
+    }
+
     public void addGroup(Group group, int location) {
         if (validLocation(location, groups)) {
             groups.add(location, group);
@@ -78,6 +88,15 @@ public class Song implements Serializable {
 
     private boolean validLocation(int location, List<?> list) {
         return location <= list.size() && location >= 0;
+    }
+
+    public boolean addVariable(String variable, String value) {
+        if (variables.containsKey(variable)) {
+            return false;
+        } else {
+            variables.put(variable, value);
+            return true;
+        }
     }
 
     public int getTempoBPM() {

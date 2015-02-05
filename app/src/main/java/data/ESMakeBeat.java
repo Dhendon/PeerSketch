@@ -5,17 +5,17 @@ import java.io.Serializable;
 /**
  * Created by davidhendon on 11/19/14.
  */
-public class ESMakeBeat implements Serializable {
+public class ESMakeBeat implements Serializable, GroupObject {
     private static final long serialVersionUID = 1L;
     private String sampleName;
-    private int track;
-    private double startMeasure;
+    private int sectionNumber;
+    private double startLocation;
     private String beatPattern;
 
-    public ESMakeBeat(String sampleName, int track, double startMeasure, String beatPattern) {
+    public ESMakeBeat(String sampleName, int sectionNumber, double startLocation, String beatPattern) {
         this.sampleName = sampleName;
-        this.track = track;
-        this.startMeasure = startMeasure;
+        this.sectionNumber = sectionNumber;
+        this.startLocation = startLocation;
         this.beatPattern = beatPattern;
     }
 
@@ -27,20 +27,20 @@ public class ESMakeBeat implements Serializable {
         this.sampleName = sampleName;
     }
 
-    public int getTrack() {
-        return track;
+    public int getSectionNumber() {
+        return sectionNumber;
     }
 
-    public void setTrack(int track) {
-        this.track = track;
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
     }
 
-    public double getStartMeasure() {
-        return startMeasure;
+    public double getStartLocation() {
+        return startLocation;
     }
 
-    public void setStartMeasure(double startMeasure) {
-        this.startMeasure = startMeasure;
+    public void setStartLocation(double startLocation) {
+        this.startLocation = startLocation;
     }
 
     public String getBeatPattern() {
@@ -49,5 +49,15 @@ public class ESMakeBeat implements Serializable {
 
     public void setBeatPattern(String beatPattern) {
         this.beatPattern = beatPattern;
+    }
+
+    public boolean isValid() {
+        return startLocation > 0 && beatpatternIsValid(beatPattern);
+    }
+
+    public boolean beatpatternIsValid(String beatPattern) {
+        String validRegexp = "(0*-*)*"; //TODO: Add in the plus sign
+        return beatPattern.length() == Util.BEATS_IN_MEASURE && beatPattern.matches(validRegexp);
+
     }
 }

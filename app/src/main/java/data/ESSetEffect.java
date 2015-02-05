@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class ESSetEffect implements Serializable {
+public class ESSetEffect implements Serializable, GroupObject {
     private static final long serialVersionUID = 2L;
     private int effectIndex;
     private int trackNumber;

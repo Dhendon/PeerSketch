@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by hendon on 11/19/14.
  */
-public class ESFitMedia implements Serializable {
+public class ESFitMedia implements Serializable, GroupObject {
     private static final long serialVersionUID = 0L;
     private String sampleName;
     private int sectionNumber;

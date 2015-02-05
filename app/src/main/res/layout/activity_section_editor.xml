@@ -21,17 +21,30 @@
 
             <Button
                 android:id="@+id/buttonFitMedia_dumbUI"
-                android:layout_width="wrap_content"
+                android:layout_width="94dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|top"
                 android:text="new fitMedia" />
 
             <Button
                 android:id="@+id/buttonPlaySection_dumbUI"
-                android:layout_width="119dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right|top"
                 android:text="Play!" />
+
+            <Button
+                android:id="@+id/buttonForLoop_dumbUI"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:text="new for loop" />
+
+            <Button
+                android:id="@+id/buttonSetEffect_dumbUI"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="new setEffect" />
+
         </LinearLayout>
 
         <LinearLayout

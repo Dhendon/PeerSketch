@@ -175,11 +175,13 @@ public class SongEditorActivity extends FragmentActivity {
     protected void onRestart() {
         super.onRestart();
         Intent intent = getIntent();
-        Section recentSection = (Section) intent.getSerializableExtra(Util.BundleKeys.SECTION);
-        // Replace old version of section with updated one
-        List<Section> sections = currentSong.getSections();
-        sections.remove(recentSection.getSectionNumber());
-        sections.add(recentSection.getSectionNumber(), recentSection);
+        if (intent.hasExtra(Util.BundleKeys.SECTION)) {
+            Section recentSection = (Section) intent.getSerializableExtra(Util.BundleKeys.SECTION);
+            // Replace old version of section with updated one
+            List<Section> sections = currentSong.getSections();
+            sections.remove(recentSection.getSectionNumber());
+            sections.add(recentSection.getSectionNumber(), recentSection);
+        }
         refreshListUI();
     }
 
@@ -196,14 +198,13 @@ public class SongEditorActivity extends FragmentActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             sectionName = input.getText().toString();
                             if (!sectionNameTaken(sectionName)) {
-                            // TODO: fix this getting cleared.
-                            int trackNumber = currentSong.getSections().size() - 1;
-                            currentSong.addSection(new Section(sectionName), trackNumber);
-                            Intent sectionEditorIntent = new Intent(getActivity().getApplicationContext(),
-                                    SectionEditorActivity.class);
-                            sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
-                            sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NUMBER, trackNumber);
-                            startActivity(sectionEditorIntent);
+                                int trackNumber = currentSong.getSections().size() - 1;
+                                currentSong.addSection(new Section(sectionName), trackNumber);
+                                Intent sectionEditorIntent = new Intent(getActivity().getApplicationContext(),
+                                        SectionEditorActivity.class);
+                                sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
+                                sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NUMBER, trackNumber);
+                                startActivity(sectionEditorIntent);
                             } else {
                                 Toast.makeText(getActivity().getApplicationContext(),
                                         "Sorry! Section name taken, please try again with a new name",
@@ -224,5 +225,4 @@ public class SongEditorActivity extends FragmentActivity {
             return builder.create();
         }
     }
-
 }

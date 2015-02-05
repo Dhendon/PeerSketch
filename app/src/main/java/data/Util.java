@@ -11,17 +11,20 @@ public class Util {
     public static final int[] DEFAULT_SAMPLE_IDS = {R.raw.synth_harp_1, R.raw.clap_1,
             R.raw.drumpad_1, R.raw.electro_1, R.raw.electro_2, R.raw.electro_3,
             R.raw.hi_hats_1, R.raw.percussion_1, R.raw.percussion_2, R.raw.organ_1};
+    public static final String[] DEFAULT_BEATS = {"––––0+++–––0+++", "0+++0+++0+0+0+",
+            "0+0+––––0+0+–0++", "0++0++0+–––0++0+", "1–001–00–0–01–00"};
     public static final String[] DEFAULT_SAMPLES = {"Synth Harp", "Clap", "Drumpad", "Electro 1",
             "Electro 2", "Electro 3", "Hi Hats", "Percussion 1", "Percussion 2", "Organ"};
     public static final int DEFAULT_TEMPO_BPM = 120;
     public static final int DEFAULT_PHRASE_LENGTH = 8;
     public static final int DROP_LOCATION = 0; // TODO: Remove this once drag and drop implemented
     public static final boolean DEBUG_MODE = true;
+    public static final String[] CONDITIONALS = {"<", "<=", "=", "!=", ">=", ">"};
+    public static final int BEATS_IN_MEASURE = 16;
     //TODO: determine which are feasible to implement
     static final String[] EFFECTS = {"PITCHSHIFT", "VOLUME", "EQ3BAND"};
     static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
             {"LOWGAIN", "LOWFREQ", "MIDGAIN", "MIDFREQ", "HIGHGAIN", "HIGHFREQ"}};
-    static final String[] CONDITIONALS = {"<", "<=", "=", "!=", ">=", ">"};
     // TODO: Update these samples to the actual ones we'll be using.
     private static String TAG = "util";
 
@@ -101,4 +104,6 @@ public class Util {
         static final String SONG = "song";
         static final String SONGLIBRARY = "songlibrary";
     }    // TODO: Include default beat patterns?
+
+
 }

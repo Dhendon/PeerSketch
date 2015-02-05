@@ -5,20 +5,55 @@ import java.io.Serializable;
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class ForLoop implements Serializable {
+public class ForLoop extends Group implements Serializable {
     private static final long serialVersionUID = 3L;
     private int start;
     private int stepSize; //TODO: check stepSize to make sure it's valid
     private int end;
-    private int conditional;
+    private String variable;
+    private int sectionNumber;
+    private char operand;
+    private double amount;
 
-    // TODO: Determine conditionals?
-
-    public ForLoop(int start, int stepSize, int end, int conditional) {
+    public ForLoop(int start, int stepSize, int end, String variable) {
         this.start = start;
         this.stepSize = stepSize;
         this.end = end;
-        this.conditional = conditional;
+        this.variable = variable;
+        sectionNumber = -1;
+    }
+
+    public char getOperand() {
+        return operand;
+    }
+
+    public void setOperand(char operand) {
+        this.operand = operand;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+    // TODO: Determine conditionals?
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public int getSectionNumber() {
+        return sectionNumber;
+    }
+
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public void setVariable(String variable) {
+        this.variable = variable;
     }
 
     public int getStart() {
@@ -45,8 +80,9 @@ public class ForLoop implements Serializable {
         this.end = end;
     }
 
+    // TODO: check for conflicts with other variable names?
     public boolean isValid() {
-        return stepSizeIsValid() && startIsValid() && endIsValid() && conditionalIsValid();
+        return stepSizeIsValid() && startIsValid() && endIsValid() && !variable.equals("");
     }
 
     private boolean stepSizeIsValid() {
@@ -83,8 +119,13 @@ public class ForLoop implements Serializable {
         }
     }
 
-    // TODO: Decide whether or not to turn red for 'equals.'
-    private boolean conditionalIsValid() {
+    @Override
+    public String toString() {
+        return "for " + variable + " in range(" + start + ", " + end + ", " + stepSize + ")";
+    }
+
+    // Python does not have conditionals within their for loops..
+    /*private boolean conditionalIsValid() {
         boolean increasing = stepSize > 0;
         boolean largerEnd = start < end;
         if (conditional == Util.Conditionals.EQUAL) { // Nope.
@@ -99,5 +140,5 @@ public class ForLoop implements Serializable {
         } else {
             return false;
         }
-    }
+    }*/
 }

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class Section implements Serializable {
+public class Section extends Group implements Serializable {
     // TODO: Implement parent instance variable, with a reference to song it's attached to.
     private static final long serialVersionUID = 6L;
     private List<ForLoop> forLoops;
@@ -19,6 +19,7 @@ public class Section implements Serializable {
     private List<ESMakeBeat> makeBeats;
     private List<Pair<Double, Double>> activeMeasures; // TODO: update this when parameters are changed
     private String name;
+    private Song parentSong;
     private int sectionNumber;
     private int tempoBPM;
     private int phraseLengthMeasures;
@@ -87,6 +88,14 @@ public class Section implements Serializable {
 
     private boolean validLocation(int location, List<?> list) {
         return location <= list.size() && location >= 0;
+    }
+
+    public Song getParentSong() {
+        return parentSong;
+    }
+
+    public void setParentSong(Song parentSong) {
+        this.parentSong = parentSong;
     }
 
     // TODO: Implement this method
