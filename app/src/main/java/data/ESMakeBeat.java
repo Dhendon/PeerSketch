@@ -52,16 +52,20 @@ public class ESMakeBeat implements Serializable, GroupObject {
     }
 
     public boolean isValid() {
-        return startLocation > 0 && beatpatternIsValid(beatPattern);
+        return true;
+        //return startLocation > 0 && beatpatternIsValid(beatPattern);
     }
 
     public boolean beatpatternIsValid(String beatPattern) {
-        String validRegexp = "(0*-*)*"; //TODO: Add in the plus sign
+        String validRegexp = "((0+(\\+)*)*-)*"; //TODO: Add in the plus sign
+        if (beatPattern.length() <= 1) {
+            return beatPattern.equals("0") || beatPattern.equals("-");
+        }
         return beatPattern.length() == Util.BEATS_IN_MEASURE && beatPattern.matches(validRegexp);
 
     }
 
     public String toString() {
-        return "makeBeat(" + startLocation + " , \"" + beatPattern + "\")";
+        return "makeBeat(" + sampleName + ", " + startLocation + " , \"" + beatPattern + "\")";
     }
 }

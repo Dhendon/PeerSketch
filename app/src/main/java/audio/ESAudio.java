@@ -27,6 +27,7 @@ public class ESAudio extends Thread {
     // This is in response to the imperfect scheduler timing.
     // TODO: replace this with noisy tick readings
     private static final int TICK_MS = 10;
+    private static final double BEAT_LENGTH = 1 / 16.0;
 
     /**
      * @param fitMedia
@@ -246,7 +247,7 @@ public class ESAudio extends Thread {
             return false;
         }
         if (!makeBeat.isValid()) {
-            Log.i(TAG, "play - makeBeat is invalid, fitmedia=" + makeBeat.toString());
+            Log.i(TAG, "play - makeBeat is invalid, makeBeat=" + makeBeat.toString());
             return false;
         }
 
@@ -255,21 +256,21 @@ public class ESAudio extends Thread {
             Log.i(TAG, "play - sampleID is invalid, name=" + makeBeat.getSampleName());
             return false;
         }
-        Pair<List<Integer>, List<Pair<Double, Double>>> restsAndMeasures =
-                restsAndMeasuresFromMakeBeat(makeBeat);
-        List<Integer> rests = restsAndMeasures.first;
-        List<Pair<Double, Double>> measures = restsAndMeasures.second;
         //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
-        Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
+        //Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
 
         // Schedule when it needs to be played
         final int startTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation(),
                 tempoBPM, phraseLength);
         // TODO: Add in the end time
-        final int endTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation() + 16 * TICK_MS,
-                tempoBPM, phraseLength);
+        final int endTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation() +
+                makeBeat.getBeatPattern().length() * BEAT_LENGTH, tempoBPM, phraseLength);
         final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+
+        final List<List<Integer>> playTimeMS = calcPlayTimesMSFromMakeBeat(makeBeat, tempoBPM,
+                phraseLength);
+
         // TODO: Add in for loops / conditionals affecting the playing of the song.
         // Play it
 
@@ -285,14 +286,37 @@ public class ESAudio extends Thread {
                 TICK_MS) {
             @Override
             public void onTick(long millisUntilFinished) {
-                if (!mediaPlayer.isPlaying() && millisUntilFinished <= durationMilliseconds) {
-                    if (startTimeMilliseconds > 0) {
-                        mediaPlayer.seekTo(startTimeMilliseconds);
-                        Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
+                long currentTimeMS = endTimeMilliseconds - millisUntilFinished;
+                //Pair<Integer, Integer> currentPairIndex;
+                // This assumes a well constructed playTimeMS list.
+                for (int i = 0; i < playTimeMS.size(); i++) {
+                    // This assumes that the latency of this search isn't enough to ruin the timing.
+                    if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) + TICK_MS &&
+                            currentTimeMS > playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) - TICK_MS) {
+                        //currentPairIndex = new Pair<Integer, Integer>(i, MakeBeatIndices.PLAY_START);
+                        if (millisUntilFinished <= durationMilliseconds) {
+                            mediaPlayer.pause();
+                            if (startTimeMilliseconds > 0) {
+                                mediaPlayer.seekTo(0);
+                            }
+                            mediaPlayer.start();
+                            Log.i(TAG, "MediaPlayer starting at " + currentTimeMS + "ms");
+                        }
+                        break;
+                    } else if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.REST_START)
+                            + TICK_MS && currentTimeMS
+                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS) {
+                        //currentPairIndex = new Pair<Integer, Integer>(i, MakeBeatIndices.REST_START);
+                        if (millisUntilFinished <= durationMilliseconds) {
+                            if (startTimeMilliseconds > 0) {
+                                mediaPlayer.seekTo(0);
+                            }
+                            mediaPlayer.start();
+                            Log.i(TAG, "MediaPlayer starting at " +
+                                    (endTimeMilliseconds - millisUntilFinished) + "ms");
+                        }
+                        break;
                     }
-                    mediaPlayer.start();
-                    Log.i(TAG, "MediaPlayer starting at " +
-                            (endTimeMilliseconds - millisUntilFinished) + "ms");
                 }
             }
 
@@ -313,33 +337,86 @@ public class ESAudio extends Thread {
      * @return
      */
     // TODO: Find a more clever way to account for rests.
-    public static Pair<List<Integer>, List<Pair<Double, Double>>> restsAndMeasuresFromMakeBeat(
-            ESMakeBeat makeBeat) {
-        List<Pair<Double, Double>> measures = new ArrayList<Pair<Double, Double>>();
-        List<Integer> rests = new ArrayList<Integer>();
+    public static List<List<Double>> measurePairsFromMakeBeat(ESMakeBeat makeBeat) {
         String beatPattern = makeBeat.getBeatPattern();
         char[] beats = beatPattern.toCharArray();
-        int beatCount = 0;
-        int restCount = 0;
-        for (char beat : beats) {
-            if (beat == '0') {
-                rests.add(restCount);
-                // Play first 1/16th note
-                measures.add(new Pair<Double, Double>(0.0, beatCount + 0.0));
-                // Reset counts
-                beatCount = 0;
-                restCount = 0;
-            } else if (beat == '-') {
-                beatCount = 0;
-                restCount++;
-            } else if (beat == '+') {
-                restCount = 0;
-                beatCount++;
+        List<List<Double>> playMeasures = new ArrayList<List<Double>>();
+        int playIndex = 0;
+        // i also tracks the position of the current beat in the sample
+        for (int i = 0; i < beats.length; i++) {
+            // TODO: Deal with more than one sample
+            // Starts a new set of beats
+            if (beats[i] == '0') {
+                playMeasures.add(playIndex, createMakeBeatPair(i, BEAT_LENGTH));
+                playIndex++;
+            } else if (beats[i] == '+') {
+                List<Double> original = playMeasures.remove(playIndex);
+                playMeasures.add(playIndex, addPlusToMakeBeatPair(original, BEAT_LENGTH));
+            } else if (beats[i] == '-') {
+                List<Double> original = playMeasures.remove(playIndex);
+                playMeasures.add(playIndex, addRestToMakeBeatPair(original, BEAT_LENGTH));
             } else {
-                Log.i(TAG, "Unrecognized character in beatPattern: " + beat);
+                Log.i(TAG, "Unrecognized character in beatPattern: " + beats[i]);
             }
         }
-        return new Pair<List<Integer>, List<Pair<Double, Double>>>(rests, measures);
+        return playMeasures;
+    }
+
+    private static List<Double> createMakeBeatPair(int beatIndex, double beatLengthMeasures) {
+        List<Double> created = new ArrayList<Double>();
+        created.add(MakeBeatIndices.PLAY_START, beatIndex * beatLengthMeasures);
+        created.add(MakeBeatIndices.PLAY_END, (beatIndex + 1) * beatLengthMeasures);
+        created.add(MakeBeatIndices.REST_START, beatIndex * beatLengthMeasures);
+        created.add(MakeBeatIndices.REST_END, beatIndex * beatLengthMeasures);
+        return created;
+    }
+
+    private static List<Double> addPlusToMakeBeatPair(List<Double> originalPair,
+                                                      double beatLengthMeasures) {
+        Double playEnd = originalPair.remove(MakeBeatIndices.PLAY_END);
+        playEnd += beatLengthMeasures;
+        originalPair.add(MakeBeatIndices.PLAY_END, playEnd);
+        return originalPair;
+    }
+
+    private static List<Double> addRestToMakeBeatPair(List<Double> originalPair,
+                                                      double beatLengthMeasures) {
+        Double restEnd = originalPair.remove(MakeBeatIndices.REST_END);
+        restEnd += beatLengthMeasures;
+        originalPair.add(MakeBeatIndices.REST_END, restEnd);
+        return originalPair;
+    }
+
+    private static List<List<Integer>> calcPlayTimesMSFromMakeBeat(ESMakeBeat makeBeat,
+                                                                   int tempoBPM, int phraseLength) {
+        List<List<Double>> measures = measurePairsFromMakeBeat(makeBeat);
+        int startTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation(),
+                tempoBPM, phraseLength);
+        List<List<Integer>> playTimesMS = new ArrayList<List<Integer>>();
+        for (int i = 0; i < measures.size(); i++) {
+            List<Integer> times = new ArrayList<Integer>();
+            Double playStart = measures.get(i).get(MakeBeatIndices.PLAY_START);
+            Double playEnd = measures.get(i).get(MakeBeatIndices.PLAY_END);
+            Double restStart = measures.get(i).get(MakeBeatIndices.REST_START);
+            Double restEnd = measures.get(i).get(MakeBeatIndices.REST_END);
+            times.add(MakeBeatIndices.PLAY_START, startTimeMilliseconds
+                    + Util.getLocationTimeMS(playStart, tempoBPM, phraseLength));
+            times.add(MakeBeatIndices.PLAY_END, startTimeMilliseconds
+                    + Util.getLocationTimeMS(playEnd, tempoBPM, phraseLength));
+            times.add(MakeBeatIndices.REST_START, startTimeMilliseconds
+                    + Util.getLocationTimeMS(restStart, tempoBPM, phraseLength));
+            times.add(MakeBeatIndices.REST_END, startTimeMilliseconds
+                    + Util.getLocationTimeMS(restEnd, tempoBPM, phraseLength));
+            playTimesMS.add(times);
+        }
+        return playTimesMS;
+    }
+
+    private interface MakeBeatIndices {
+        public static final int PLAY_START = 0;
+        public static final int PLAY_END = 1;
+        public static final int REST_START = 2;
+        public static final int REST_END = 3;
     }
 }
 

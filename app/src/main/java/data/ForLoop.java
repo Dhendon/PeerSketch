@@ -122,9 +122,9 @@ public class ForLoop extends Group implements Serializable {
     @Override
     public String toString() {
         String base = "for " + variable + " in range(" + start + ", " + end + ", " + stepSize + ")";
-        String contained = "-->";
+        String contained = "";
         for (GroupObject object : orderedObjects) {
-            contained += "\n" + object.toString();
+            contained += "\n-->" + object.toString();
         }
         return base + contained;
     }

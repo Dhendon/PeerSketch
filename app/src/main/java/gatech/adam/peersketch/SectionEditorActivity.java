@@ -40,7 +40,7 @@ public class SectionEditorActivity extends FragmentActivity
         CreateMakeBeatDialogFragment.MakeBeatDialogListener {
 
     public static String TAG = "section-editor";
-    private static int selectedRadioButtonIndex = -1;
+    private static int selectedRadioButtonIndex = RadioButtonIndices.UNASSIGNED;
     // TODO change this to use callbacks from the DialogFragment
     private Section currentSection;
     private Group selectedToAddGroup;
@@ -118,9 +118,11 @@ public class SectionEditorActivity extends FragmentActivity
         mPlayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentSection.getFitMedias().isEmpty()) {
+                if (currentSection.getFitMedias().isEmpty()
+                        && currentSection.getForLoops().isEmpty()
+                        && currentSection.getMakeBeats().isEmpty()) {
                     // TODO: Replace text once we add in makeBeat
-                    Toast.makeText(context, "No Samples: Try making a FitMedia," +
+                    Toast.makeText(context, "No Samples: Try making a FitMedia or MakeBeat" +
                             " then hit play again", Toast.LENGTH_LONG).show();
                 } else {
                     ESAudio.play(currentSection, context);
@@ -138,15 +140,12 @@ public class SectionEditorActivity extends FragmentActivity
                     int fitMediaIndex = position;
                     // Clicked item is a fitMedia
                     ESFitMedia selectedFitMedia = currentSection.getFitMedias().get(fitMediaIndex);
-                    //localPlay(selectedFitMedia, songBPM, songPhraseLength);
                     ESAudio.play(selectedFitMedia, context, songBPM, songPhraseLength);
                     Log.i(TAG, "Playing fitMedia at position: " + position);
                     selectedToAddGroup = null;
                 } else if (position < fitMedias.size() + forLoops.size()) {
                     int forLoopIndex = position - fitMedias.size();
-                    Toast.makeText(context, "TODO: Allow ability to add to for loops.",
-                            Toast.LENGTH_SHORT).show();
-                    // Add dialog -- add (fitMedia) or (makeBeat) or (forLoop)?
+                    promptAddChoiceToGroupDialog();
                     selectedToAddGroup = forLoops.get(forLoopIndex);
                     if (selectedRadioButtonIndex == RadioButtonIndices.FITMEDIA) {
                         promptFitMediaDialogAndWrite();
@@ -172,12 +171,26 @@ public class SectionEditorActivity extends FragmentActivity
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                view.setBackgroundColor(Color.RED);
-                ESFitMedia removed = currentSection.getFitMedias().remove(position);
-                Toast.makeText(context, "Removed FitMedia: " + removed.toString(),
-                        Toast.LENGTH_SHORT).show();
-                // TODO Undo button for removal?
-                Log.i(TAG, "Removed Section Item:" + removed.toString());
+                if (position < fitMedias.size()) {
+                    int fitMediaIndex = position;
+                    // Clicked item is a fitMedia
+                    ESFitMedia removed = currentSection.getFitMedias().remove(fitMediaIndex);
+                    Toast.makeText(context, "Removed FitMedia: " + removed.toString(),
+                            Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "Removed Section Item:" + removed.toString());
+                } else if (position < fitMedias.size() + forLoops.size()) {
+                    int forLoopIndex = position - fitMedias.size();
+                    ForLoop forLoop = forLoops.get(forLoopIndex);
+                    ESAudio.executeForLoop(forLoop, currentSection, context);
+                    Toast.makeText(context, "Executing for loop: " + forLoop.toString(),
+                            Toast.LENGTH_SHORT).show();
+                } else if (position < fitMedias.size() + forLoops.size() + makeBeats.size()) {
+                    int makeBeatIndex = position - fitMedias.size() - forLoops.size();
+                    ESMakeBeat removed = currentSection.getMakeBeats().remove(makeBeatIndex);
+                    Toast.makeText(context, "Removed FitMedia: " + removed.toString(),
+                            Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "Removed Section Item:" + removed.toString());
+                }
                 refreshListUI();
                 return true;
             }
@@ -221,6 +234,10 @@ public class SectionEditorActivity extends FragmentActivity
         return super.onOptionsItemSelected(item);
     }
 
+    private void promptAddChoiceToGroupDialog() {
+        DialogFragment newFragment = new AddChoiceToGroupDialogFragment();
+        newFragment.show(getFragmentManager(), "addChoiceToGroup");
+    }
     private void promptFitMediaDialogAndWrite() {
         // TODO: write toStrings for all the methods
         DialogFragment newFragment = new CreateFitMediaDialogFragment();
@@ -387,7 +404,7 @@ public class SectionEditorActivity extends FragmentActivity
         final int FORLOOP = 2;
     }
 
-    public static class CreateForLoopChoiceDialogFragment extends DialogFragment {
+    public static class AddChoiceToGroupDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the Builder class for convenient dialog construction
@@ -411,10 +428,10 @@ public class SectionEditorActivity extends FragmentActivity
             forLoopChoice.setTextColor(Color.BLACK);
             forLoopChoice.setText("for loop");
             // Adds a ifStatement choice to the RadioGroup
-            RadioButton ifStatementChoice = new RadioButton(getActivity().getApplicationContext());
-            choiceFake.addView(ifStatementChoice);
-            ifStatementChoice.setTextColor(Color.BLACK);
-            ifStatementChoice.setText("if statement");
+            //RadioButton ifStatementChoice = new RadioButton(getActivity().getApplicationContext());
+            //choiceFake.addView(ifStatementChoice);
+            //ifStatementChoice.setTextColor(Color.BLACK);
+            //ifStatementChoice.setText("if statement");
             final RadioGroup input = choiceFake;
             builder.setMessage("What would you like to add?")
                     .setPositiveButton("Okay!", new DialogInterface.OnClickListener() {
