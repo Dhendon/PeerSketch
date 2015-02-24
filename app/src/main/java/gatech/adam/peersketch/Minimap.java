@@ -46,7 +46,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
-
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,10 +71,10 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
     // TODO: Get start and endMeasure values for each Section
     // TODO: Compute maxLength from list of measures
     // TODO: Get numSections
-    public int startMeasure = 1;
-    public int endMeasure = 9;
+    public int startMeasure;
+    public int endMeasure;
     public int maxLength = 9;
-    public int numSections = 5;
+    public int numSections;
     public int priorRects; // Counter that tracks how many previous rects are drawn before the current one;
     // TODO: Find a better way to compute priorRects
 
@@ -97,13 +97,14 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
     public int topCoord;
     public int bottomCoord;
 
-    // For testing purposes only:
-    private int l;
-    private int t;
-    private int r;
-    private int b;
+    private int x1;
+    private int x2;
+    private int y1;
+    private int y2;
 
-
+    List<Section> sections;
+    public int sectionNum;
+    public List<Pair<Double,Double>> activeMeasures;
 
 
 
@@ -127,120 +128,95 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
 
 
 
-
     @Override
+
+
+
+    public int calcSectionNum() {
+
+        for (Section section : sections) {
+            sectionNum = section.getSectionNumber();
+        }
+        return sectionNum;
+    }
+
+    public int calcNumSections() {
+
+        numSections =  sections.size();
+        return numSections;
+    }
+
+    public int makeRectHeight() {
+
+        rectHeight = ( ( frameHeight - (2 * padding) ) / calcNumSections() ) - rectMargin;
+        return rectHeight;
+    }
+
+    public int makeTopCoord() {
+        topCoord =  rectMargin + ( calcSectionNum() * rectMargin ) + ( calcSectionNum() * makeRectHeight());
+        return topCoord;
+    }
+
+    public int makeBottomCoord() {
+
+        bottomCoord = topCoord + makeRectHeight();
+        return bottomCoord;
+    }
+
+    public int makeMeasureWidth() {
+
+        measureWidth = frameWidth / (maxLength - 1);
+        return measureWidth;
+    }
+
+
+// TODO: Find max right value in activeMeasures List Pairs
+
+ /*
+
+    public int calcMaxLength(List<Pair<Double, Double>> activeMeasures) {
+
+        maxLength = Collections.max(activeMeasures);  //How do I calculate this?
+        return maxLength;
+    } */
+
+
+
+
+
     public void draw(Canvas canvas) {
 
         canvas.drawColor(backgroundPaint.getColor());
 
 
+        for (Section section : sections) {
+            List<Pair<Double,Double>> measures = section.calcActiveMeasures();
 
-        // Each rect is created here:
-        // TODO: Create a function to iterate across the rects and compute start/end/top/bottom values for each, then drawRect for each new Rect in that array, for numSections of them
+            // different color for each section?
+            rectPaint = new Paint();
+            rectPaint.setColor(CYAN);
 
-        l = makeRectStart();
-        t = makeTopCoord();
-        r = makeRectEnd();
-        b = makeBottomCoord();
+// TODO: Split measure Pairs into each Double value, and convert to int
 
-        rectPaint = new Paint();
-        newRect = new Rect(l, t, r, b);
+            for (Pair<Double, Double> measure : measures) {
+                int x1 = measure.getLeft();
+                int x2 = measure.getRight();
 
-        rectPaint.setColor(CYAN);
-        canvas.drawRect(newRect, rectPaint);
+                x1 = (x1 - 1) * makeMeasureWidth();
+                x2 = (x2 - 1) * makeMeasureWidth();
+
+                y1 = makeTopCoord();
+                y2 = makeBottomCoord();
+
+                // draw rectangle
+                newRect = new Rect(x1, y1, x2, y2);
+                canvas.drawRect(newRect, rectPaint);
 
 
-        // Fixed rect for testing purposes
-        rectPaint.setColor(GREEN);
-        canvas.drawRect(305, 175, 600, 255, rectPaint );
+            }
 
-        // Text for debugging
-        textPaint = new Paint();
-        textPaint.setColor(WHITE);
-        textPaint.setTextSize(46);
-
-        canvas.drawText( String.valueOf(makeMeasureWidth() ), 100, 200, textPaint);
-        canvas.drawText( String.valueOf(makeRectEnd() ), 80, 300, textPaint);
-
+        }
     }
-
-
-
-
-    public int makeMeasureWidth() {
-
-        measureWidth = frameWidth / (maxLength - 1);
-
-        return measureWidth;
-
-    }
-
-
-
-    public int makeRectStart() {
-
-        rectStart = (startMeasure - 1) * makeMeasureWidth();
-
-        return rectStart;
-    }
-
-
-
-    public int makeRectEnd() {
-
-        rectEnd = (endMeasure - 1) * measureWidth;
-
-        return rectEnd;
-    }
-
-
-
-    public int makeRectHeight() {
-
-        rectHeight = ((frameHeight - 2 * padding) / numSections) - rectMargin;
-
-        return rectHeight;
-    }
-
-
-    public int makeTopCoord() {
-
-        priorRects = 0; // Just for testing - there will need to be a better way to increment this or a better method for doing it.
-        topCoord =  rectMargin + ( priorRects * rectMargin ) + ( priorRects * makeRectHeight());
-
-        return topCoord;
-    }
-
-
-
-
-    public int makeBottomCoord() {
-
-        bottomCoord = topCoord + makeRectHeight();
-
-        return bottomCoord;
-    }
-
-
-
-
-
-     /*
-    public int getMeasures() {
-
-
-        List measures = Section.calcActiveMeasures();
-
-    }
-
-
-    private void songInfo() {
-        // Get the number of sections (numSections)
-        // Get the array of sections
-        // Compute the maxVal of measures to find maxLength
-    }
-
-    */
 
 
     @Override
