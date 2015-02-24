@@ -107,6 +107,14 @@ public class Group implements Serializable, GroupObject {
         orderedObjects.add(location, object);
     }
 
+    public void add(Group group) {
+        subgroups.add(group);
+    }
+
+    public void add(int location, Group group) {
+        subgroups.add(location, group);
+    }
+
     public void addObject(GroupObject object) {
         orderedObjects.add(object);
     }

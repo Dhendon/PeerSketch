@@ -55,6 +55,7 @@ public class ESAudio extends Thread {
             return false;
         }
 
+
         //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
@@ -118,7 +119,10 @@ public class ESAudio extends Thread {
                         playThenPauseThenSeekAllPairs(playTimes, context, fitMedia,
                                 section.getTempoBPM(), section.getPhraseLengthMeasures());
                     } else if (contained.getClass() == ESMakeBeat.class) {
-                        Log.i(TAG, "Attempted to play makeBeat -- need to implement!");
+                        ESMakeBeat makeBeat = (ESMakeBeat) contained;
+                        play(makeBeat, context, section.getTempoBPM(),
+                                section.getPhraseLengthMeasures());
+                        // TODO Account for the for loop variable values
                     } else if (contained.getClass() == ESSetEffect.class) {
                         Log.i(TAG, "Attempted to play with setEffect -- need to implement!");
                     } else if (contained.getClass() == ForLoop.class) {

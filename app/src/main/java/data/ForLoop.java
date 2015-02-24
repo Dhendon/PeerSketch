@@ -121,7 +121,12 @@ public class ForLoop extends Group implements Serializable {
 
     @Override
     public String toString() {
-        return "for " + variable + " in range(" + start + ", " + end + ", " + stepSize + ")";
+        String base = "for " + variable + " in range(" + start + ", " + end + ", " + stepSize + ")";
+        String contained = "-->";
+        for (GroupObject object : orderedObjects) {
+            contained += "\n" + object.toString();
+        }
+        return base + contained;
     }
 
     // Python does not have conditionals within their for loops..

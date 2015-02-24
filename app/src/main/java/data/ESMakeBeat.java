@@ -60,4 +60,8 @@ public class ESMakeBeat implements Serializable, GroupObject {
         return beatPattern.length() == Util.BEATS_IN_MEASURE && beatPattern.matches(validRegexp);
 
     }
+
+    public String toString() {
+        return "makeBeat(" + startLocation + " , \"" + beatPattern + "\")";
+    }
 }

@@ -199,7 +199,9 @@ public class SongEditorActivity extends FragmentActivity {
                             sectionName = input.getText().toString();
                             if (!sectionNameTaken(sectionName)) {
                                 int trackNumber = currentSong.getSections().size() - 1;
-                                currentSong.addSection(new Section(sectionName), trackNumber);
+                                Section newSection = new Section(sectionName);
+                                newSection.setParentSong(currentSong);
+                                currentSong.addSection(newSection, trackNumber);
                                 Intent sectionEditorIntent = new Intent(getActivity().getApplicationContext(),
                                         SectionEditorActivity.class);
                                 sectionEditorIntent.putExtra(Util.BundleKeys.SECTION_NAME, sectionName);
