@@ -63,42 +63,30 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
 
     private Paint backgroundPaint;
     private Paint rectPaint;
-    private Paint textPaint;
     private Rect  newRect;
-
-    public List<Pair<Double, Double>> measures;
-
-    // TODO: Get start and endMeasure values for each Section
-    // TODO: Compute maxLength from list of measures
-    // TODO: Get numSections
-    public int startMeasure;
-    public int endMeasure;
-    public int maxLength = 9;
-    public int numSections;
-    public int priorRects; // Counter that tracks how many previous rects are drawn before the current one;
-    // TODO: Find a better way to compute priorRects
 
 
     // Fixed values
+    // TODO: Match these with UI design
     public int padding = 10;
     public int rectMargin = 5;
 
-    // TODO: get these two the parent_width and parent_height from the XML layout file
+    // TODO: get these two from the parent_width and parent_height from the XML layout file
     public int frameWidth = 705;
     public int frameHeight = 330;
 
 
     // Values computed in methods below
-    public int measureWidth;
-    public int rectStart;
-    public int rectEnd;
+    public Double measureWidth;
+    public Double maxLength;
+    public int numSections;
 
     public int rectHeight;
     public int topCoord;
     public int bottomCoord;
 
-    private int x1;
-    private int x2;
+    private Double x1;
+    private Double x2;
     private int y1;
     private int y2;
 
@@ -126,9 +114,6 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-
-
-    @Override
 
 
 
@@ -163,26 +148,32 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
         return bottomCoord;
     }
 
-    public int makeMeasureWidth() {
+    public Double makeMeasureWidth() {
 
-        measureWidth = frameWidth / (maxLength - 1);
+        measureWidth = frameWidth / (calcMaxLength() - 1);
         return measureWidth;
     }
 
 
 // TODO: Find max right value in activeMeasures List Pairs
 
- /*
 
-    public int calcMaxLength(List<Pair<Double, Double>> activeMeasures) {
 
-        maxLength = Collections.max(activeMeasures);  //How do I calculate this?
+    public Double calcMaxLength() {
+
+       for (Pair<Double, Double> measure : activeMeasures) {
+           Double endValue = measure.second;
+           if (endValue > maxLength) {
+               maxLength = endValue;
+           }
+       }
+
         return maxLength;
-    } */
+    }
 
 
 
-
+    @Override
 
     public void draw(Canvas canvas) {
 
@@ -192,24 +183,25 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
         for (Section section : sections) {
             List<Pair<Double,Double>> measures = section.calcActiveMeasures();
 
-            // different color for each section?
+            // TODO make different color for each section?
             rectPaint = new Paint();
             rectPaint.setColor(CYAN);
 
-// TODO: Split measure Pairs into each Double value, and convert to int
-
             for (Pair<Double, Double> measure : measures) {
-                int x1 = measure.getLeft();
-                int x2 = measure.getRight();
+                x1 = measure.first;
+                x2 = measure.second;
+
 
                 x1 = (x1 - 1) * makeMeasureWidth();
+                int l = (int) x1.doubleValue();
                 x2 = (x2 - 1) * makeMeasureWidth();
+                int r = (int) x2.doubleValue();
 
                 y1 = makeTopCoord();
                 y2 = makeBottomCoord();
 
                 // draw rectangle
-                newRect = new Rect(x1, y1, x2, y2);
+                newRect = new Rect(l, y1, r, y2);
                 canvas.drawRect(newRect, rectPaint);
 
 
