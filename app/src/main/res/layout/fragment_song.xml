@@ -1,0 +1,68 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/layout_currentSong">
+
+    <!--mini-map-->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_alignParentTop="true"
+        android:background="#000000"
+        android:elevation="0dip"/>
+
+
+
+    <RelativeLayout
+        android:id="@+id/layout_relative_currentSong"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <!--transparent window for mini-map-->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_alignParentTop="true"
+            android:background="@android:color/transparent"
+            android:elevation="1dp" />
+
+        <!--Groups and tracks-->
+        <ExpandableListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/groupList_currentSong"
+            android:scrollbars="none"
+            android:elevation="10dp"
+            android:layout_marginTop="300dp"
+            android:groupIndicator="@android:color/transparent"
+            android:childDivider="@android:color/transparent"
+            android:stackFromBottom="false"
+            android:paddingLeft="24dp"
+            android:paddingTop="48dp" />
+
+        <!--play button-->
+        <com.melnykov.fab.FloatingActionButton
+            android:id="@+id/play_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="274dp"
+            fab:fab_colorNormal="@color/primary"
+            fab:fab_type="normal"
+            android:elevation="25dp"
+            android:adjustViewBounds="false"
+            android:layout_gravity="left|bottom"
+            android:layout_marginLeft="24dp"
+            android:clickable="true" />
+
+        <!--plus button-->
+
+    </RelativeLayout>
+
+    <!--Floating action button-->
+
+</RelativeLayout>
+

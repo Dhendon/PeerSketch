@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/list_item_textview"
+    android:id="@+id/list_group_textview"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
-    android:textSize="16sp"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp"
-    android:paddingStart="32dp">
+    android:textSize="20sp"
+    android:elevation="10dp"
+    android:padding="@dimen/activity_horizontal_margin">
 
 </TextView>

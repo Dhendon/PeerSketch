@@ -1,6 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="gatech.adam.peersketch.CurrentSongActivity">
+    tools:context="gatech.adam.peersketch.Activity_Song">
     <item
         android:id="@+id/action_example"
         android:showAsAction="withText|ifRoom"

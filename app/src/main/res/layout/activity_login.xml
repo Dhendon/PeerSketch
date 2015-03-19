@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="gatech.adam.peersketch.LoginActivity">
+    tools:context="gatech.adam.peersketch.Activity_Login">
 
     <!-- Login progress -->
     <ProgressBar

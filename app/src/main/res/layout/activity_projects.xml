@@ -1,4 +1,4 @@
-<!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
+<!--Home Activity-->
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,18 +7,22 @@
     android:layout_height="match_parent"
     android:slideEdge="@integer/RIGHT"
     android:windowEnterTransition="?android:slideEdge"
-    tools:context=".HomeActivity">
 
+    tools:context=".HomeActivity" >
+
+    <!--Container, for home activity content-->
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <fragment android:id="@+id/navigation_drawer"
+    <!--Drawer fragment, for left-side drawer (login/out, etc.)-->
+    <fragment
+        android:id="@+id/navigation_drawer"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:name="gatech.adam.peersketch.NavigationDrawerFragment"
+        android:name="gatech.adam.peersketch.Fragment_Navigation_Drawer"
         tools:layout="@layout/fragment_navigation_drawer" />
 
 </android.support.v4.widget.DrawerLayout>

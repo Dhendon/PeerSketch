@@ -1,6 +1,5 @@
 package gatech.adam.peersketch;
 
-import android.animation.Animator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -12,54 +11,36 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ExpandableListAdapter;
 import android.widget.ListView;
-
-import com.melnykov.fab.FloatingActionButton;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import data.Song;
 
+public class Activity_Projects
+        extends Activity
+        implements Fragment_Navigation_Drawer.NavigationDrawerCallbacks {
 
-public class CurrentSongActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+    // Fragment managing the behaviors, interactions and presentation of the navigation drawer.
+    private Fragment_Navigation_Drawer mFragmentNavigationDrawer;
 
-    private Song current;
-
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
-    private NavigationDrawerFragment mSongDrawerFragment;
-
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
+    // Used to store the last screen title. For use in {@link #restoreActionBar()}.
     private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_current_song);
+        setContentView(R.layout.activity_projects);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mFragmentNavigationDrawer = (Fragment_Navigation_Drawer) getFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
 
-        mSongDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.drawer_song);
-
-        // Set up the root drawer; then set up song tools drawer.
-        mNavigationDrawerFragment.setUp(
+        // Set up the drawer
+        mFragmentNavigationDrawer.setUp(
                 R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-        mSongDrawerFragment.setUp(
-                R.id.drawer_song,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
@@ -68,7 +49,7 @@ public class CurrentSongActivity extends Activity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, SongListFragment.newInstance(position + 1))
                 .commit();
     }
 
@@ -96,18 +77,12 @@ public class CurrentSongActivity extends Activity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+        if (!mFragmentNavigationDrawer.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.current_song, menu);
-
-            Intent intent = this.getIntent();
-            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                mTitle = intent.getStringExtra(Intent.EXTRA_TEXT);
-                restoreActionBar();
-            }
-
+            getMenuInflater().inflate(R.menu.home, menu);
+            restoreActionBar();
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -129,24 +104,23 @@ public class CurrentSongActivity extends Activity
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * A placeholder fragment containing a simple gatech.adam.peersketch.view.
      */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+    public static class SongListFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        private static final String ARG_SECTION_NUMBER = "section_number";
+        ArrayAdapter<String> songList_adapter;
+
+
+        public SongListFragment() {
         }
 
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public static SongListFragment newInstance(int sectionNumber) {
+            SongListFragment fragment = new SongListFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
@@ -154,29 +128,41 @@ public class CurrentSongActivity extends Activity
         }
 
         @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_current_song, container, false);
+                Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_projects, container, false);
 
-            String[] currentSongArray = {
-                    "Track 1",
-                    "Track 2",
-                    "Track 3"
+            String[] songTitlesArray = {
+                    "My Song 1",
+                    "My Song 2",
+                    "My Song 3"
             };
-            List<String> currentSongList = new ArrayList<String>(
-                    Arrays.asList(currentSongArray));
+            List<String> songTitlesList = new ArrayList<String>(
+                    Arrays.asList(songTitlesArray));
 
-            ArrayAdapter<String> adapter_currentSong = new ArrayAdapter<String>(
-                    getActivity(),
+            songList_adapter = new ArrayAdapter<String>(getActivity(),
                     R.layout.list_item_textview,
                     R.id.list_item_textview,
-                    currentSongList);
+                    songTitlesList);
 
-            ListView listView = (ListView) rootView.findViewById(R.id.list_currentSong);
-            listView.setAdapter(adapter_currentSong);
+            ListView listView = (ListView) rootView.findViewById(R.id.list_songs);
+            listView.setAdapter(songList_adapter);
 
-            FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
-            fab.attachToListView(listView);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String songTitle = songList_adapter.getItem(position);
+                    Intent intent = new Intent(getActivity(), Activity_Song.class)
+                            .putExtra(Intent.EXTRA_TEXT, songTitle);
+
+                    startActivity(intent);
+                }
+            });
 
             return rootView;
         }
@@ -184,7 +170,7 @@ public class CurrentSongActivity extends Activity
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            ((CurrentSongActivity) activity).onSectionAttached(
+            ((Activity_Projects) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
     }
