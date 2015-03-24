@@ -17,7 +17,7 @@ public class Section implements Serializable {
     private List<ESSetEffect> effects;
     private List<ESFitMedia> fitMedias;
     private List<ESMakeBeat> makeBeats;
-    private List<Pair<Double, Double>> activeMeasures; // TODO: update this when parameters are changed
+    public List<Pair<Double, Double>> activeMeasures; // TODO: update this when parameters are changed
     private String name;
     private int sectionNumber;
     private int tempoBPM;
