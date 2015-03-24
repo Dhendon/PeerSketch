@@ -1,9 +1,5 @@
 package gatech.adam.peersketch.views;
 
-/**
- * Created by pedrosilva on 2/24/15.
- */
-
 public class ExpandableList_Child {
     private String name;
     private String tag;

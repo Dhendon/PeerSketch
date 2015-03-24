@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:textSize="16sp"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp"
-    android:paddingStart="32dp">
+    android:textColor="@color/white"
+    android:background="@color/transparent"
+    android:padding="@dimen/activity_horizontal_margin"
+    android:gravity="center_vertical"
+    />
 
-</TextView>

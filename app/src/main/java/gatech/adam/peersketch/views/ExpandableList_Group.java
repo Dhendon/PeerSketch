@@ -26,4 +26,9 @@ public class ExpandableList_Group {
     public void setItems(ArrayList<ExpandableList_Child> items) {
         this.items = items;
     }
+
+    public boolean hasItems() {
+        if (items.size() > 0) { return true; }
+        else { return false; }
+    };
 }

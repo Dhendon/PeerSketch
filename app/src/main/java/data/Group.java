@@ -32,4 +32,6 @@ public class Group {
     public List<Section> getSections() {
         return this.sections;
     }
+
+    public String getDescription() { return this.description; }
 }

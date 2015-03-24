@@ -1,0 +1,32 @@
+<!--Main activity-->
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <!--Container, for home activity content-->
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!--Drawer fragment, for left-side drawer-->
+    <fragment
+        android:id="@+id/navigation_drawer"
+        android:layout_width="@dimen/drawer_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background ="@color/green"
+        android:name="gatech.adam.peersketch.Fragment_Drawer_Navigation"/>
+
+    <!--Drawer fragment, for right-side drawer-->
+    <fragment
+        android:id="@+id/pallet_drawer"
+        android:layout_width="@dimen/drawer_width_large"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background ="@color/green"
+        android:name="gatech.adam.peersketch.Fragment_Drawer_Pallet"/>
+
+</android.support.v4.widget.DrawerLayout>

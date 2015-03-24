@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".Activity_Projects"
+            android:name=".Activity_Main"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,13 +25,6 @@
             android:name=".Activity_Login"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" />
-        <activity
-            android:name=".Activity_Song"
-            android:label="@string/title_activity_current_song" />
-        <activity
-            android:name=".Activity_Track"
-            android:label="@string/title_activity_activity__track" >
-        </activity>
     </application>
 
 </manifest>
