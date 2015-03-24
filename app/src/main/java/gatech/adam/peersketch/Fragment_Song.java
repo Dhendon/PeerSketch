@@ -109,30 +109,6 @@ public class Fragment_Song extends Fragment {
         );
 
 
-//        // Pad's children
-//        ArrayList<ExpandableList_Child> children1 = new ArrayList<>();
-//        children1.add(new ExpandableList_Child("Track 4"));
-//        children1.add(new ExpandableList_Child("Track 5"));
-//        children1.add(new ExpandableList_Child("Track 6"));
-//        children1.add(new ExpandableList_Child("Track 7"));
-//
-//        // Bass's children
-//        ArrayList<ExpandableList_Child> children2 = new ArrayList<ExpandableList_Child>();
-//        children2.add(new ExpandableList_Child("Track 8"));
-//        children2.add(new ExpandableList_Child("Track 9"));
-//
-//        // Rhythm's children
-//        ArrayList<ExpandableList_Child> children3 = new ArrayList<ExpandableList_Child>();
-//        children3.add(new ExpandableList_Child("Track 10"));
-//        children3.add(new ExpandableList_Child("Track 11"));
-//
-//        // Populating groups...
-//        ArrayList<ExpandableList_Group> groups = new ArrayList<>();
-//        groups.add(new ExpandableList_Group("Pad", children1));
-//        groups.add(new ExpandableList_Group("Bass", children2));
-//        groups.add(new ExpandableList_Group("Rhythm", children3));
-
-
 
         // Getting pointer to expandable list view in root, fragment_song.xml, and setting adapter
         mTrackList.setAdapter(trackList_adapter);
