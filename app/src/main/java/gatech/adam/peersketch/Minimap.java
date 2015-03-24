@@ -85,10 +85,10 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
     public int topCoord;
     public int bottomCoord;
 
-    private Double x1;
-    private Double x2;
-    private int y1;
-    private int y2;
+    private Double x1 = 0.0;
+    private Double x2 = 0.0;
+    private int y1 = 0;
+    private int y2 = 0;
 
     List<Section> sections;
     public int sectionNum;
@@ -110,8 +110,8 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
         draw(c);
 
         getHolder().unlockCanvasAndPost(c);
-
     }
+
 
 
 
@@ -173,11 +173,22 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
 
 
 
-    @Override
 
+    @Override
     public void draw(Canvas canvas) {
 
         canvas.drawColor(backgroundPaint.getColor());
+
+        rectPaint = new Paint();
+        rectPaint.setColor(CYAN);
+
+//        int l = 1;
+//        int r = 500;
+//        int y1 = 1;
+//        int y2 = 80;
+
+//        newRect = new Rect(l, y1, r, y2);
+//        canvas.drawRect(newRect, rectPaint);
 
 
         for (Section section : sections) {
@@ -193,12 +204,13 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
 
 
                 x1 = (x1 - 1) * makeMeasureWidth();
-                int l = (int) x1.doubleValue();
                 x2 = (x2 - 1) * makeMeasureWidth();
-                int r = (int) x2.doubleValue();
 
                 y1 = makeTopCoord();
                 y2 = makeBottomCoord();
+
+                int l = (int) x1.doubleValue();
+                int r = (int) x2.doubleValue();
 
                 // draw rectangle
                 newRect = new Rect(l, y1, r, y2);
@@ -208,6 +220,7 @@ public class Minimap extends SurfaceView implements SurfaceHolder.Callback {
             }
 
         }
+
     }
 
 
