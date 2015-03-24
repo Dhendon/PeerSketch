@@ -8,17 +8,26 @@ import java.util.List;
  * This is the representation of a Song object and will be used to generate a block.
  */
 public class Song {
-    List<Section> sections;
+    String name;
+    List<Section> sections; // Track
     List<ForLoop> forLoops;
     List<IfStatement> ifStatements;
     List<ESSetEffect> effects;
-    List<Group> groups;
+    List<Group> groups; // Track groupings
     int tempoBPM;
     int phraseLength;
     String description;
 
     public Song() {
         this(120);
+    }
+
+    public Song(String name) {
+        this.name = name;
+        this.tempoBPM = 120;
+        this.phraseLength = 8;
+        this.sections = new ArrayList<Section>();
+        this.groups = new ArrayList<Group>();
     }
 
     public Song(int tempoBPM) {
@@ -99,4 +108,10 @@ public class Song {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public String getName() { return name; }
+
+    public List<Group> getGroups() { return groups; }
+
+    public List<Section> getSections() { return sections; }
 }
