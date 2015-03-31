@@ -22,9 +22,10 @@ public class Util {
     public static final String[] CONDITIONALS = {"<", "<=", "=", "!=", ">=", ">"};
     public static final int BEATS_IN_MEASURE = 16;
     //TODO: determine which are feasible to implement
-    static final String[] EFFECTS = {"PITCHSHIFT", "VOLUME", "EQ3BAND"};
-    static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
+    public static final String[] EFFECT_NAMES = {"REVERB", "VOLUME", "EQ3BAND", "PITCHSHIFT"};
+    public static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
             {"LOWGAIN", "LOWFREQ", "MIDGAIN", "MIDFREQ", "HIGHGAIN", "HIGHFREQ"}};
+    public final static String ES_LOGIN_BASE_URL = "http://earsketch.gatech.edu/EarSketchWS";
     // TODO: Update these samples to the actual ones we'll be using.
     private static String TAG = "util";
 
@@ -61,9 +62,10 @@ public class Util {
 
     // TODO: Update these effect indexes with the EFFECTS array and add mapping to settings
     public interface Effects {
-        public static final int PITCHSHIFT = 0;
+        public static final int REVERB = 0;
         public static final int VOLUME = 1;
         public static final int EQUALIZER = 2;
+        public static final int PITCHSHIFT = 3;
     }
 
     public interface EffectParameters {

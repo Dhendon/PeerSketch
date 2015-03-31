@@ -1,4 +1,4 @@
-package gatech.adam.peersketch;
+package ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,6 +14,7 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import data.ForLoop;
+import gatech.adam.peersketch.R;
 
 public class CreateForLoopDialogFragment extends DialogFragment {
     public final String TAG = "create-forloop-dialog";

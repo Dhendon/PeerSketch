@@ -2,6 +2,7 @@ package audio;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.audiofx.EnvironmentalReverb;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.util.Pair;
@@ -112,6 +113,7 @@ public class ESAudio extends Thread {
         for (GroupObject object : section.getOrderedObjects()) {
             if (object.getClass() == ForLoop.class) {
                 ForLoop forLoop = (ForLoop) object;
+                ESSetEffect current;
                 for (GroupObject contained : forLoop.getOrderedObjects()) {
                     if (contained.getClass() == ESFitMedia.class) {
                         ESFitMedia fitMedia = (ESFitMedia) contained;
@@ -125,7 +127,7 @@ public class ESAudio extends Thread {
                                 section.getPhraseLengthMeasures());
                         // TODO Account for the for loop variable values
                     } else if (contained.getClass() == ESSetEffect.class) {
-                        Log.i(TAG, "Attempted to play with setEffect -- need to implement!");
+                        current = (ESSetEffect) contained;
                     } else if (contained.getClass() == ForLoop.class) {
                         Log.i(TAG, "Loop again!");
                     } else if (contained.getClass() == IfStatement.class) {
@@ -231,6 +233,82 @@ public class ESAudio extends Thread {
                 Log.i(TAG, "Need to implement if statement logic here");
             }
         }
+    }
+
+    public static boolean play(ESFitMedia fitMedia, ESSetEffect setEffect,
+                               Context context, int tempoBPM, int phraseLength) {
+        if (fitMedia == null) {
+            Log.i(TAG, "play - fitMedia is null");
+            fitMedia = new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0.5, 1);
+            //TODO: make this less jank
+            //return false;
+        }
+        if (setEffect == null) {
+            Log.i(TAG, "play - setEffect is null");
+            //TODO: make this less jank too.
+            return false;
+        }
+        if (context == null) {
+            Log.i(TAG, "play - context is null");
+            return false;
+        }
+        if (!fitMedia.isValid()) {
+            Log.i(TAG, "play - fitMedia is invalid, fitmedia=" + fitMedia.toString());
+            return false;
+        }
+
+        int sampleId = Util.getSampleIDFromName(fitMedia.getSampleName());
+        if (sampleId == -1) {
+            Log.i(TAG, "play - sampleID is invalid, name=" + fitMedia.getSampleName());
+            return false;
+        }
+
+
+        //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+
+        // TODO: Handle effects in a robust way instead of encoding them
+        Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
+
+        // Schedule when it needs to be played
+        final int startTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getStartLocation(),
+                tempoBPM, phraseLength);
+        final int endTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getEndLocation(),
+                tempoBPM, phraseLength);
+        final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+
+        // Play it
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            Log.i(TAG, "MediaPlayer is playing, stopping it");
+        }
+            /*
+             Ignore the error message: Should have subtitle controller already set
+             it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
+             */
+        CountDownTimer playTimer = new CountDownTimer(endTimeMilliseconds,
+                TICK_MS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (!mediaPlayer.isPlaying() && millisUntilFinished <= durationMilliseconds) {
+                    if (startTimeMilliseconds > 0) {
+                        mediaPlayer.seekTo(startTimeMilliseconds);
+                        Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
+                    }
+                    mediaPlayer.start();
+                    Log.i(TAG, "MediaPlayer starting at " +
+                            (endTimeMilliseconds - millisUntilFinished) + "ms");
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
+            }
+        }.start();
+        return true;
     }
 
     public static boolean play(ESMakeBeat makeBeat, Context context, int tempoBPM,
@@ -410,6 +488,45 @@ public class ESAudio extends Thread {
             playTimesMS.add(times);
         }
         return playTimesMS;
+    }
+
+    private MediaPlayer attachESEffect(Context context, int sampleID, ESSetEffect setEffect) {
+        MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleID);
+        if (setEffect != null) {
+            if (setEffect.getEffectIndex() == Util.Effects.REVERB) {
+                EnvironmentalReverb overdrive = createOverdriveEffect();
+                mediaPlayer.attachAuxEffect(overdrive.getId());
+                mediaPlayer.setAuxEffectSendLevel(100.0f);
+            }
+        }
+        return mediaPlayer;
+    }
+
+    /*
+        code from:
+        https://github.com/paranoidfrog/paranoid-frog-mobile-app/blob/893034c1a99dfbffa81806e1a2429338cd863099/src/com/example/paranoid_effects/Overdrive.java
+     */
+    private EnvironmentalReverb createOverdriveEffect() {
+
+        int decayTime = 5000;
+        short density = 500;
+        short diffusion = 500;
+        short roomLevel = 0;
+        short reverbLevel = 500;
+        short reflectionsDelay = 100;
+        short reflectionsLevel = 100;
+        short reverbDelay = 0;
+
+        EnvironmentalReverb reverb = new EnvironmentalReverb(0, 0);
+        reverb.setDecayTime(decayTime);
+        reverb.setDensity(density);
+        reverb.setDiffusion(diffusion);
+        reverb.setReverbLevel(reverbLevel);
+        reverb.setRoomLevel(roomLevel);
+        reverb.setReflectionsDelay(reflectionsDelay);
+        reverb.setReflectionsLevel(reflectionsLevel);
+        reverb.setReverbDelay(reverbDelay);
+        return reverb;
     }
 
     private interface MakeBeatIndices {

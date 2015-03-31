@@ -8,22 +8,40 @@ import java.io.Serializable;
 public class ESSetEffect implements Serializable, GroupObject {
     private static final long serialVersionUID = 2L;
     private int effectIndex;
-    private int trackNumber;
-    private double measure;
-    private double effectValue;
+    private int sectionNumber;
+    private double startMeasure;
+    private double endMeasure;
+    private double amount;
 
-    public ESSetEffect(int effectIndex, int trackNumber, double measure) {
+    public ESSetEffect(int effectIndex, double startMeasure, double endMeasure, double amount) {
         this.effectIndex = effectIndex;
-        this.trackNumber = trackNumber;
-        this.measure = measure;
+        this.startMeasure = startMeasure;
+        this.endMeasure = endMeasure;
+        this.amount = amount;
     }
 
-    public double getEffectValue() {
-        return effectValue;
+    public double getStartMeasure() {
+        return startMeasure;
     }
 
-    public void setEffectValue(double effectValue) {
-        this.effectValue = effectValue;
+    public void setStartMeasure(double startMeasure) {
+        this.startMeasure = startMeasure;
+    }
+
+    public double getEndMeasure() {
+        return endMeasure;
+    }
+
+    public void setEndMeasure(double endMeasure) {
+        this.endMeasure = endMeasure;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
     public int getEffectIndex() {
@@ -34,24 +52,27 @@ public class ESSetEffect implements Serializable, GroupObject {
         this.effectIndex = effectIndex;
     }
 
-    public int getTrackNumber() {
-        return trackNumber;
+    public int getSectionNumber() {
+        return sectionNumber;
     }
 
-    public void setTrackNumber(int trackNumber) {
-        this.trackNumber = trackNumber;
-    }
-
-    public double getMeasure() {
-        return measure;
-    }
-
-    public void setMeasure(double measure) {
-        this.measure = measure;
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
     }
 
     // TODO Implement this SetEffect isValid method.
     public boolean isValid() {
-        return true;
+        boolean validMeasures = startMeasure < endMeasure;
+        boolean validEffectIndex = effectIndex >= 0 && effectIndex < Util.EFFECT_NAMES.length;
+        return validMeasures && validEffectIndex;
+    }
+
+    @Override
+    public String toString() {
+        return "setEffect(" + Util.EFFECT_NAMES[effectIndex] +
+                " " + sectionNumber +
+                " (" + startMeasure +
+                ", " + endMeasure +
+                ") amount=" + amount;
     }
 }

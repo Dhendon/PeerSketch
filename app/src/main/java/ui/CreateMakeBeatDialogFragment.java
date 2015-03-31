@@ -1,5 +1,4 @@
-package gatech.adam.peersketch;
-
+package ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,12 +14,17 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import data.ESFitMedia;
+import data.ESMakeBeat;
 import data.Util;
+import gatech.adam.peersketch.R;
 
-public class CreateFitMediaDialogFragment extends DialogFragment {
-    public final String TAG = "create-fitmedia-dialog";
-    private FitMediaDialogListener mListener;
+/**
+ * Created by hendon on 2/12/15.
+ */
+public class CreateMakeBeatDialogFragment extends DialogFragment {
+
+    public final String TAG = "create-makebeat-dialog";
+    private MakeBeatDialogListener mListener;
 
     @Override
     public void onAttach(Activity activity) {
@@ -28,11 +32,11 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (FitMediaDialogListener) activity;
+            mListener = (MakeBeatDialogListener) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
-                    + " must implement FitMediaDialogListener");
+                    + " must implement MakeBeatDialogListener");
         }
     }
 
@@ -42,7 +46,7 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         // Null Root View is acceptable here because AlertDialog replaces it anyway.
-        final View prompt = inflater.inflate(R.layout.fragment_fitmedia_dialog, null);
+        final View prompt = inflater.inflate(R.layout.fragment_makebeat_dialog, null);
         // Setup UI elements
         final Spinner samplesSpinner = (Spinner) prompt.findViewById(
                 R.id.spinnerSamples);
@@ -59,31 +63,36 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
                 R.id.editTextStartLocation);
         final EditText endEditText = (EditText) prompt.findViewById(
                 R.id.editTextEndLocation);
+        final EditText beatPatternEditText = (EditText) prompt.findViewById(
+                R.id.editTextBeatPattern);
 
-        builder.setTitle("Create New FitMedia")
-                .setPositiveButton("Make it so!", new DialogInterface.OnClickListener() {
+        builder.setTitle("Create New MakeBeat")
+                .setPositiveButton("Make it happen, Captain!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         String rawStartLocation = startEditText.getText().toString();
-                        String rawEndLocation = endEditText.getText().toString();
+                        // String rawEndLocation = endEditText.getText().toString();
                         String sampleName = samplesSpinner.getSelectedItem().toString();
-                        if (!rawStartLocation.equals("") && !rawEndLocation.equals("")
+                        String beatPattern = beatPatternEditText.getText().toString();
+                        if (!rawStartLocation.equals("") && !beatPattern.equals("")
                                 && !sampleName.equals("")) {
                             double start = Double.parseDouble(rawStartLocation);
-                            double end = Double.parseDouble(rawEndLocation);
+                            //double end = Double.parseDouble(rawEndLocation);
                             Toast.makeText(getActivity().getApplicationContext(),
-                                    "Made FitMedia! (" + rawStartLocation + ", " + rawEndLocation + ")",
+                                    "Made MakeBeat! (" + rawStartLocation + ", "
+                                            + beatPattern + ")",
                                     Toast.LENGTH_SHORT).show();
-                            ESFitMedia value = new ESFitMedia(sampleName, -1, start, end);
-                            mListener.onDialogPositiveClick(CreateFitMediaDialogFragment.this, value);
+                            ESMakeBeat value = new ESMakeBeat(sampleName, -1, start, beatPattern);
+                            mListener.onDialogPositiveClick(CreateMakeBeatDialogFragment.this,
+                                    value);
 
                         } else {
                             Toast.makeText(getActivity().getApplicationContext(),
                                     "Invalid parameters", Toast.LENGTH_SHORT).show();
-                            Log.i(TAG, "Unable to create FitMedia");
+                            Log.i(TAG, "Unable to create MakeBeat");
                         }
                     }
                 })
-                .setNegativeButton("Forget it", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Not today...", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
                     }
@@ -94,7 +103,8 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    public interface FitMediaDialogListener {
-        public void onDialogPositiveClick(DialogFragment dialog, ESFitMedia value);
+    public interface MakeBeatDialogListener {
+        public void onDialogPositiveClick(DialogFragment dialog, ESMakeBeat value);
     }
+
 }

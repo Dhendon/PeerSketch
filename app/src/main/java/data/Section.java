@@ -180,6 +180,7 @@ public class Section extends Group implements Serializable {
             Pair<Double, Double> measureRange = new Pair<Double, Double>(startLocation, endLocation);
             activeMeasures.add(measureRange);
         }
+        // TODO: incorporate makebeat and for loops
         return activeMeasures;
     }
 }

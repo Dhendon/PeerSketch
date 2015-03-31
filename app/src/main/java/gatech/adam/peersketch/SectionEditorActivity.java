@@ -26,18 +26,24 @@ import java.util.List;
 import audio.ESAudio;
 import data.ESFitMedia;
 import data.ESMakeBeat;
+import data.ESSetEffect;
 import data.ForLoop;
 import data.Group;
 import data.GroupObject;
 import data.IfStatement;
 import data.Section;
 import data.Util;
+import ui.CreateFitMediaDialogFragment;
+import ui.CreateForLoopDialogFragment;
+import ui.CreateMakeBeatDialogFragment;
+import ui.CreateSetEffectDialogFragment;
 
 
 public class SectionEditorActivity extends FragmentActivity
         implements CreateFitMediaDialogFragment.FitMediaDialogListener,
         CreateForLoopDialogFragment.ForLoopDialogListener,
-        CreateMakeBeatDialogFragment.MakeBeatDialogListener {
+        CreateMakeBeatDialogFragment.MakeBeatDialogListener,
+        CreateSetEffectDialogFragment.SetEffectDialogListener {
 
     public static String TAG = "section-editor";
     private static int selectedRadioButtonIndex = RadioButtonIndices.UNASSIGNED;
@@ -224,8 +230,16 @@ public class SectionEditorActivity extends FragmentActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_add_fitmedia) {
+            // FITMEDIA
+            promptFitMediaDialogAndWrite();
             return true;
+        } else if (id == R.id.action_add_makebeat) {
+            promptMakeBeatDialogAndWrite();
+        } else if (id == R.id.action_add_seteffect) {
+            promptSetEffectDialogAndWrite();
+        } else if (id == R.id.action_add_forloop) {
+            promptForLoopDialogAndWrite();
         } else if (id == R.id.action_clear_all) {
             currentSection.clearAll();
             Log.i(TAG, "Cleared all items in current section");
@@ -238,6 +252,7 @@ public class SectionEditorActivity extends FragmentActivity
         DialogFragment newFragment = new AddChoiceToGroupDialogFragment();
         newFragment.show(getFragmentManager(), "addChoiceToGroup");
     }
+
     private void promptFitMediaDialogAndWrite() {
         // TODO: write toStrings for all the methods
         DialogFragment newFragment = new CreateFitMediaDialogFragment();
@@ -254,6 +269,12 @@ public class SectionEditorActivity extends FragmentActivity
         // TODO: write toStrings for all the methods
         DialogFragment newFragment = new CreateForLoopDialogFragment();
         newFragment.show(getFragmentManager(), "createForLoop");
+    }
+
+    private void promptSetEffectDialogAndWrite() {
+        // TODO: write toStrings for all the methods
+        DialogFragment newFragment = new CreateSetEffectDialogFragment();
+        newFragment.show(getFragmentManager(), "createSetEffect");
     }
 
     // TODO: Replace with ArrayAdapter.add(...) version because this is slow.
@@ -339,6 +360,24 @@ public class SectionEditorActivity extends FragmentActivity
         //if (!currentSection.getParentSong().addVariable(variableName, value.getAmount() + "")) {
         //    Log.e(TAG, "Unable to set variable:" + variableName + " to " + value.getAmount());
         // }
+        refreshListUI();
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, ESSetEffect value) {
+        value.setSectionNumber(sectionNumber);
+        // TODO(hendon)
+        currentSection.add(value, Util.DROP_LOCATION);
+        currentSection.addObject(value);
+        //mSectionItemsAdapter.add(value.toString());
+        //mSectionItemsAdapter.notifyDataSetChanged();
+        if (selectedToAddGroup != null) {
+            Log.i(TAG, "Added new SetEffect: " + value.toString() + " to "
+                    + selectedToAddGroup.toString());
+            updateGroups(value);
+        } else {
+            Log.i(TAG, "Added new SetEffect: " + value.toString());
+        }
         refreshListUI();
     }
 
