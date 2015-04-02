@@ -26,4 +26,9 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_clear_section" />
+    <item
+        android:id="@+id/action_test_seteffect"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="*Test setEffect" />
 </menu>

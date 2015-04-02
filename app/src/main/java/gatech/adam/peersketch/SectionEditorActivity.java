@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -243,6 +244,26 @@ public class SectionEditorActivity extends FragmentActivity
         } else if (id == R.id.action_clear_all) {
             currentSection.clearAll();
             Log.i(TAG, "Cleared all items in current section");
+        }
+        // TODO: Remove this after testing
+        else if (id == R.id.action_test_seteffect) {
+            ESSetEffect effect = new ESSetEffect(Util.Effects.REVERB, 0, 1, 1.0);
+            String sampleName = Util.DEFAULT_SAMPLES[Util.DefaultSamples.ORGAN];
+            final ESFitMedia fitMedia = new ESFitMedia(sampleName, 0, 0, 1);
+            ESAudio.play(fitMedia, effect, context, 120, 8);
+            Toast.makeText(context, "Testing setEffect!", Toast.LENGTH_SHORT).show();
+            CountDownTimer timer = new CountDownTimer(4000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+
+                }
+
+                @Override
+                public void onFinish() {
+                    ESAudio.play(fitMedia, context, 120, 8);
+                }
+            }.start();
+
         }
 
         return super.onOptionsItemSelected(item);

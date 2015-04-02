@@ -257,6 +257,10 @@ public class ESAudio extends Thread {
             return false;
         }
 
+        if (!setEffect.isValid()) {
+            Log.i(TAG, "play - setEffect is invalid, seteffect=" + fitMedia.toString());
+            return false;
+        }
         int sampleId = Util.getSampleIDFromName(fitMedia.getSampleName());
         if (sampleId == -1) {
             Log.i(TAG, "play - sampleID is invalid, name=" + fitMedia.getSampleName());
@@ -264,8 +268,32 @@ public class ESAudio extends Thread {
         }
 
 
-        //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        //final MediaPlayer mediaPlayer = attachESEffect(context, sampleId, setEffect);
+        if (setEffect.getEffectIndex() == Util.Effects.REVERB) {
+            int decayTime = 1000;
+            short density = 500;
+            short diffusion = 500;
+            short roomLevel = 0;
+            short reverbLevel = 500;
+            short reflectionsDelay = 100;
+            short reflectionsLevel = 100;
+            short reverbDelay = 0;
+
+            EnvironmentalReverb reverb = new EnvironmentalReverb(0, mediaPlayer.getAudioSessionId());
+            reverb.setDecayTime(decayTime);
+            reverb.setDensity(density);
+            reverb.setDiffusion(diffusion);
+            reverb.setReverbLevel(reverbLevel);
+            reverb.setRoomLevel(roomLevel);
+            reverb.setReflectionsDelay(reflectionsDelay);
+            reverb.setReflectionsLevel(reflectionsLevel);
+            reverb.setReverbDelay(reverbDelay);
+            reverb.setEnabled(true);
+            //EnvironmentalReverb overdrive = createOverdriveEffect();
+            //mediaPlayer.attachAuxEffect(reverb.getId());
+            mediaPlayer.setAuxEffectSendLevel(1.0f);
+        }
 
         // TODO: Handle effects in a robust way instead of encoding them
         Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
@@ -490,12 +518,30 @@ public class ESAudio extends Thread {
         return playTimesMS;
     }
 
-    private MediaPlayer attachESEffect(Context context, int sampleID, ESSetEffect setEffect) {
+    private static MediaPlayer attachESEffect(Context context, int sampleID, ESSetEffect setEffect) {
         MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleID);
         if (setEffect != null) {
             if (setEffect.getEffectIndex() == Util.Effects.REVERB) {
-                EnvironmentalReverb overdrive = createOverdriveEffect();
-                mediaPlayer.attachAuxEffect(overdrive.getId());
+                int decayTime = 5000;
+                short density = 500;
+                short diffusion = 500;
+                short roomLevel = 0;
+                short reverbLevel = 500;
+                short reflectionsDelay = 100;
+                short reflectionsLevel = 100;
+                short reverbDelay = 0;
+
+                EnvironmentalReverb reverb = new EnvironmentalReverb(0, 0);
+                reverb.setDecayTime(decayTime);
+                reverb.setDensity(density);
+                reverb.setDiffusion(diffusion);
+                reverb.setReverbLevel(reverbLevel);
+                reverb.setRoomLevel(roomLevel);
+                reverb.setReflectionsDelay(reflectionsDelay);
+                reverb.setReflectionsLevel(reflectionsLevel);
+                reverb.setReverbDelay(reverbDelay);
+                //EnvironmentalReverb overdrive = createOverdriveEffect();
+                mediaPlayer.attachAuxEffect(reverb.getId());
                 mediaPlayer.setAuxEffectSendLevel(100.0f);
             }
         }
@@ -506,7 +552,7 @@ public class ESAudio extends Thread {
         code from:
         https://github.com/paranoidfrog/paranoid-frog-mobile-app/blob/893034c1a99dfbffa81806e1a2429338cd863099/src/com/example/paranoid_effects/Overdrive.java
      */
-    private EnvironmentalReverb createOverdriveEffect() {
+    private static EnvironmentalReverb createOverdriveEffect() {
 
         int decayTime = 5000;
         short density = 500;
