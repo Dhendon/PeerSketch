@@ -10,7 +10,7 @@
     <gatech.adam.peersketch.Surface_Minimap
         android:id="@+id/surfaceView_songMap"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="300dp"
         android:background="@color/brown"
         android:elevation="5dp">
     </gatech.adam.peersketch.Surface_Minimap>

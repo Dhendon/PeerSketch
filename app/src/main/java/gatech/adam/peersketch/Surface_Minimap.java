@@ -1,11 +1,14 @@
 package gatech.adam.peersketch;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 import android.util.Pair;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 
@@ -14,6 +17,7 @@ import java.util.List;
 import data.Section;
 
 import static android.graphics.Color.*;
+import static android.view.MotionEvent.ACTION_UP;
 
 
 public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callback {
@@ -44,6 +48,7 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
     private int y2 = 0;
 
     List<Section> mSections;
+    List<Pair<Rect, Integer>> mRectanglePairs = new ArrayList<>();
     public int sectionNum;
     public List<Pair<Double,Double>> mMeasures;
     public int[] colors = {
@@ -59,7 +64,7 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
         getHolder().addCallback(this);
 
         frameWidth = context.getResources().getDisplayMetrics().widthPixels;
-        frameHeight = 636;
+        frameHeight = 635;
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(context.getResources().getColor(R.color.brown));   // Sets background color
@@ -76,8 +81,6 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
 
         // Calculating measure width
         mMeasureWidth = frameWidth / calcMaxLength();
-
-
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -140,13 +143,14 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
         return maxLength - 1;
     }
 
+    public List<Pair<Rect, Integer>> getRectanglePairs() {
+        return mRectanglePairs;
+    }
+
     @Override
     public void draw(Canvas canvas) {
 
         canvas.drawColor(backgroundPaint.getColor());
-
-        rectPaint = new Paint();
-        rectPaint.setColor(CYAN);
 
         int counter = 0;
 
@@ -176,7 +180,8 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
                     newRect = new Rect(l, y1, r, y2);
                     canvas.drawRect(newRect, rectPaint);
 
-
+                    // Adding rect to rectangle list
+                    mRectanglePairs.add(new Pair<Rect, Integer>(newRect, new Integer(section.getSectionNumber())));
                 }
 
                 // Updating counter

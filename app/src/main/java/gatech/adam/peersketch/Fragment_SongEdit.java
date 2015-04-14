@@ -5,9 +5,13 @@ package gatech.adam.peersketch;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.Pair;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +34,7 @@ public class Fragment_SongEdit extends Fragment {
     private List<Group> mGroups;
     private List<Section> mSections;
     private ExpandableListView mTrackList;
-    private SurfaceView mSongMap;
+    private Surface_Minimap mSongMap;
     private Activity_Main mActivity;
     private Fragment_Fab mFabFragment;
     private FloatingActionButton mPlay;
@@ -65,7 +69,39 @@ public class Fragment_SongEdit extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_song_edit, container, false);
 
         // Getting song minimap
-        mSongMap = (SurfaceView) rootView.findViewById(R.id.surfaceView_songMap);
+        mSongMap = (Surface_Minimap) rootView.findViewById(R.id.surfaceView_songMap);
+       mSongMap.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+
+           }
+       });
+
+        mSongMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.v("Activity_Main", "Test");
+
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    int x = (int) event.getX();
+                    int y = (int) event.getY();
+
+
+                    List<Pair<Rect, Integer >> rectanglePairs = mSongMap.getRectanglePairs();
+                    for (Pair<Rect, Integer> pair : rectanglePairs) {
+
+                        Rect rect = pair.first;
+                        Integer sectionNumber = pair.second;
+
+                        if(rect.contains(x, y)) {
+                            Log.v("Activity_Main", sectionNumber.toString());
+                        }
+                    }
+                }
+
+                return false;
+            }
+        });
 
         // Instantiating floating action button fragment
         mFabFragment = Fragment_Fab.newInstance();
