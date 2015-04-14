@@ -1,22 +1,25 @@
 package data;
 
+import java.io.Serializable;
+
 /**
- * Created by davidhendon on 11/19/14.
+ * Created by hendon on 11/19/14.
  */
-public class ESFitMedia {
+public class ESFitMedia implements Serializable, GroupObject {
+    private static final long serialVersionUID = 0L;
     private String sampleName;
-    private int trackNumber;
+    private int sectionNumber;
     private double startLocation;
     private double endLocation;
 
-    public ESFitMedia(String sampleName, int trackNumber, double startLocation, double endLocation) {
+    public ESFitMedia(String sampleName, int sectionNumber, double startLocation, double endLocation) {
         this.sampleName = sampleName;
-        this.trackNumber = trackNumber;
+        this.sectionNumber = sectionNumber;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
     }
 
-    // TODO: Implement this method
+    // TODO: Implement this FitMedia isValid method
     public boolean isValid() {
         // Check sample name is correct / exists
         // make sure track exists
@@ -37,12 +40,12 @@ public class ESFitMedia {
         this.sampleName = sampleName;
     }
 
-    public int getTrackNumber() {
-        return trackNumber;
+    public int getSectionNumber() {
+        return sectionNumber;
     }
 
-    public void setTrackNumber(int trackNumber) {
-        this.trackNumber = trackNumber;
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
     }
 
     public double getStartLocation() {
@@ -61,4 +64,8 @@ public class ESFitMedia {
         this.endLocation = endLocation;
     }
 
+    @Override
+    public String toString() {
+        return sampleName + " (" + startLocation + "," + endLocation + ")";
+    }
 }

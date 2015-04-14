@@ -2,29 +2,39 @@ package data;
 
 import android.util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class Section {
+public class Section extends Group implements Serializable {
+    // TODO: Implement parent instance variable, with a reference to song it's attached to.
+    private static final long serialVersionUID = 6L;
     private List<ForLoop> forLoops;
     private List<IfStatement> ifStatements;
     private List<ESSetEffect> effects;
     private List<ESFitMedia> fitMedias;
     private List<ESMakeBeat> makeBeats;
-    private List<Pair<Integer, Integer>> activeMeasures; // TODO: update this when parameters are changed
-    private String sample; // TODO: replace with MediaPlayer file
+    private List<Pair<Double, Double>> activeMeasures; // TODO: update this when parameters are changed
+    private String name;
+    private Song parentSong;
+    private int sectionNumber;
+    private int tempoBPM;
+    private int phraseLengthMeasures;
 
-    public Section(String sample) {
-        this.sample = sample;
+    public Section(String name) {
+        this.name = name;
+        // TODO Change this later.
+        tempoBPM = 120;
+        phraseLengthMeasures = 8;
         forLoops = new ArrayList<ForLoop>();
         ifStatements = new ArrayList<IfStatement>();
         effects = new ArrayList<ESSetEffect>();
         fitMedias = new ArrayList<ESFitMedia>();
         makeBeats = new ArrayList<ESMakeBeat>();
-        activeMeasures = new ArrayList<Pair<Integer, Integer>>();
+        activeMeasures = new ArrayList<Pair<Double, Double>>();
     }
 
 
@@ -80,6 +90,14 @@ public class Section {
         return location <= list.size() && location >= 0;
     }
 
+    public Song getParentSong() {
+        return parentSong;
+    }
+
+    public void setParentSong(Song parentSong) {
+        this.parentSong = parentSong;
+    }
+
     // TODO: Implement this method
     public boolean isValid() {
         return true;
@@ -105,16 +123,64 @@ public class Section {
         return makeBeats;
     }
 
-    public List<Pair<Integer, Integer>> getActiveMeasures() {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getTempoBPM() {
+        return tempoBPM;
+    }
+
+    public void setTempoBPM(int tempoBPM) {
+        this.tempoBPM = tempoBPM;
+    }
+
+    public int getPhraseLengthMeasures() {
+        return phraseLengthMeasures;
+    }
+
+    public void setPhraseLengthMeasures(int phraseLengthMeasures) {
+        this.phraseLengthMeasures = phraseLengthMeasures;
+    }
+
+    @Override
+    public String toString() {
+        return "Section{" +
+                "name='" + name + '\'' +
+                ", fitMedias=" + fitMedias +
+                '}';
+    }
+
+    public int getSectionNumber() {
+        return sectionNumber;
+    }
+
+    public void setSectionNumber(int sectionNumber) {
+        this.sectionNumber = sectionNumber;
+    }
+
+    public void clearAll() {
+        forLoops = new ArrayList<ForLoop>();
+        ifStatements = new ArrayList<IfStatement>();
+        effects = new ArrayList<ESSetEffect>();
+        fitMedias = new ArrayList<ESFitMedia>();
+        makeBeats = new ArrayList<ESMakeBeat>();
+        activeMeasures = new ArrayList<Pair<Double, Double>>();
+    }
+
+    public List<Pair<Double, Double>> calcActiveMeasures() {
+        ArrayList<Pair<Double, Double>> activeMeasures = new ArrayList<Pair<Double, Double>>();
+        for (ESFitMedia fitMedia : fitMedias) {
+            double startLocation = fitMedia.getStartLocation();
+            double endLocation = fitMedia.getEndLocation();
+            Pair<Double, Double> measureRange = new Pair<Double, Double>(startLocation, endLocation);
+            activeMeasures.add(measureRange);
+        }
+        // TODO: incorporate makebeat and for loops
         return activeMeasures;
     }
-
-    public String getSample() {
-        return sample;
-    }
-
-    public void setSample(String sample) {
-        this.sample = sample;
-    }
-
 }

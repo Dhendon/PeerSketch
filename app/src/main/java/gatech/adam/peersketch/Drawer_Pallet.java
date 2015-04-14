@@ -3,6 +3,7 @@ package gatech.adam.peersketch;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.SharedPreferences;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
@@ -11,20 +12,28 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import audio.ESAudio;
+import data.ESFitMedia;
+import data.Section;
+import data.Util;
 import gatech.adam.peersketch.views.ExpandableList_Adapter;
 import gatech.adam.peersketch.views.ExpandableList_Child;
 import gatech.adam.peersketch.views.ExpandableList_Group;
 
 
-public class Fragment_Drawer_Pallet extends Fragment {
+public class Drawer_Pallet extends Fragment {
     // Remember the position of the selected item.
     private static final String STATE_SELECTED_POSITION = "selected_pallet_drawer_position";
 
@@ -78,16 +87,6 @@ public class Fragment_Drawer_Pallet extends Fragment {
         // Inflate navigation drawer list view, attach to activity_main/container
         mDrawerListView = (ExpandableListView) mDrawerLinearLayout.findViewById(R.id.listView_pallet);
 
-        // Set list item click listener
-        mDrawerListView.setOnItemClickListener(
-                new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        selectItem(position);
-                    }
-                }
-        );
-
         // Set list item long click listener
         mDrawerListView.setOnItemLongClickListener(
                 new AdapterView.OnItemLongClickListener() {
@@ -98,7 +97,7 @@ public class Fragment_Drawer_Pallet extends Fragment {
                             ExpandableList_Child item = (ExpandableList_Child) mDrawerListView.getItemAtPosition(position);
                             mCallbacks.onPalletDrawerItemDrag(item, view);
                             return true;
-                        } else{
+                        } else {
                             return false;
                         }
                     }
@@ -107,54 +106,42 @@ public class Fragment_Drawer_Pallet extends Fragment {
 
         // Set expandable list view adapter
         // Track Groups
-        // Pad's children
         ArrayList<ExpandableList_Child> children1 = new ArrayList<>();
-        children1.add(new ExpandableList_Child("YO1_82_BPM_EFLAT_MINOR"));
-        children1.add(new ExpandableList_Child("YO2_81_BPM_F_MINOR"));
-        children1.add(new ExpandableList_Child("YO3_88_BPM_F_MINOR"));
-        children1.add(new ExpandableList_Child("YO4_88_BPM_BFLAT_MINOR"));
-        children1.add(new ExpandableList_Child("YO5_77_BPM_BFLAT_MINOR"));
-        children1.add(new ExpandableList_Child("YO6_77_BPM_C_MINOR"));
-        children1.add(new ExpandableList_Child("YO7_91_BPM_BFLAT_MINOR"));
-
-        // Bass's children
-        ArrayList<ExpandableList_Child> children2 = new ArrayList<ExpandableList_Child>();
-        children2.add(new ExpandableList_Child("Dub Bass Wobble"));
-        children2.add(new ExpandableList_Child("Dub Drum"));
-        children2.add(new ExpandableList_Child("Dub Drum"));
-        children2.add(new ExpandableList_Child("Dub Filter Chord"));
-        children2.add(new ExpandableList_Child("Dub Lead"));
-        children2.add(new ExpandableList_Child("Dub Pad"));
-        children2.add(new ExpandableList_Child("Dub Perc Drum"));
-
-        // Rhythm's children
-        ArrayList<ExpandableList_Child> children3 = new ArrayList<ExpandableList_Child>();
-        children3.add(new ExpandableList_Child("OS_CLAP01"));
-        children3.add(new ExpandableList_Child("OS_CLOSEDHAT01"));
-        children3.add(new ExpandableList_Child("OS_COWBELL01"));
-        children3.add(new ExpandableList_Child("OS_COWBELL02"));
-        children3.add(new ExpandableList_Child("OS_COWBELL03"));
-        children3.add(new ExpandableList_Child("OS_COWBELL04"));
-        children3.add(new ExpandableList_Child("OS_KICK01"));
-        children3.add(new ExpandableList_Child("OS_KICK02"));
+        for (String name : Util.DEFAULT_SAMPLES) {
+            children1.add(new ExpandableList_Child(name));
+        }
 
         // Populating groups...
         ArrayList<ExpandableList_Group> groups = new ArrayList<>();
-        groups.add(new ExpandableList_Group("Young Guru", children1));
-        groups.add(new ExpandableList_Group("Richard Devine", children2));
-        groups.add(new ExpandableList_Group("MakeBeat", children3));
-
+        groups.add(new ExpandableList_Group("Demo Samples", children1));
 
         // Initiating track list adapter
         ExpandableList_Adapter pallet_adapter = new ExpandableList_Adapter(
-                getActivity(),
+                (Activity_Main) getActivity(),
                 groups,
-                "pallet"
+                Activity_Main.ExpandableListAdapterMode.PALLET_DRAWER
         );
 
-        // Getting pointer to expandable list view in root, fragment_song.xml, and setting adapter
-        ExpandableListView expandableListView =  (ExpandableListView) mDrawerListView.findViewById(R.id.listView_pallet);
+        // Getting pointer to expandable list view in root, fragment_song_editt.xml.xml, and setting adapter
+        final ExpandableListView expandableListView =  (ExpandableListView) mDrawerListView.findViewById(R.id.listView_pallet);
         expandableListView.setAdapter(pallet_adapter);
+
+        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+
+                // Getting child item
+                String sampleName = Util.DEFAULT_SAMPLES[childPosition];
+
+                // Playing sample
+                ESAudio.play(new ESFitMedia(sampleName, 0, 0, 2), getActivity(), 120, 4);
+
+                // Animating view
+                Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.scale_up);
+                v.startAnimation(anim);
+                return true;
+            }
+        });
 
         return mDrawerLinearLayout;
     }
@@ -195,7 +182,7 @@ public class Fragment_Drawer_Pallet extends Fragment {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onPalletDrawerItemSelected(position);
+            //mCallbacks.onPalletDrawerItemSelected(position);
         }
     }
 
@@ -223,8 +210,7 @@ public class Fragment_Drawer_Pallet extends Fragment {
 
     // Callbacks interface that all activities using this fragment must implement.
     public static interface PalletDrawerCallbacks {
-        // Called when an item in the navigation drawer is selected.
-        void onPalletDrawerItemSelected(int position);
+       // Called when an item is dragged
         void onPalletDrawerItemDrag(ExpandableList_Child item, View view);
     }
 }

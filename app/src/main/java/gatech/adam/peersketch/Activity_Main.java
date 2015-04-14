@@ -9,86 +9,131 @@ import android.app.FragmentManager;
 import android.content.ClipData;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Toast;
 
-import java.util.ArrayList;
-
-import data.Group;
+import audio.ESAudio;
+import data.ESFitMedia;
 import data.Section;
 import data.Song;
 import data.SongLibrary;
+import data.Util;
 import gatech.adam.peersketch.views.ExpandableList_Child;
 
 public class Activity_Main
         extends Activity
-        implements Fragment_Drawer_Pallet.PalletDrawerCallbacks, Fragment_Drawer_Navigation.NavigationDrawerCallbacks {
+        implements Drawer_Pallet.PalletDrawerCallbacks, Drawer_Navigation.NavigationDrawerCallbacks {
 
-    private FragmentManager mFragmentManager = getFragmentManager(); // Fragment manager, used for switching fragments
-    private DrawerLayout mDrawerContainer; // Get a pointer to the drawer layout
-    private Fragment mProjects; // Get a pointer to the project list fragment
+    // Fragments
+    private FragmentManager mFragmentManager; // Fragment manager, used for switching fragments
+    public DrawerLayout mDrawerContainer; // Drawer container
+    public Drawer_Navigation mNavigationDrawer; // Navigation drawer
+    public Drawer_Pallet mPalletDrawer; // Pallet drawer
 
+    public Fragment mSongLibraryFragment; // Song library
+    public Fragment_SongEdit mSongEditorFragment; // Song editor
+    public Fragment_SectionEdit mSectionEditorFragment; // Section editor
+    public Fragment_Fab mFabFragment; // Floating action button
+
+    // Data
+    private Song mSong;
+    private Section mSection;
     public SongLibrary mSongLibrary = new SongLibrary();
+    public enum ExpandableListAdapterMode {SONG_EDITOR, PALLET_DRAWER};
+
+    // Mode
+    public enum Mode {SONG_LIBRARY, SONG_EDITOR, SECTION_EDITOR};
+    public Mode mMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Fragment_Drawer_Navigation fragmentNavigationDrawer; // Declare a pointer to the navigation fragment
-        Fragment_Drawer_Pallet fragmentPalletDrawer; // Declare a pointer to the pallet fragment
+        // Initializing dummy data
+        initData();
 
-        initData(); // Initialize dummy data
+        // Restoring saved instance state, if available
+        super.onCreate(savedInstanceState);
+        // Setting root content
+        setContentView(R.layout.activity_main);
 
-        super.onCreate(savedInstanceState); // Restore saved instance state, if available
-        setContentView(R.layout.activity_main); // Set root content view to XML layout file, activity_main
+        // Getting fragment manager
+        mFragmentManager = getFragmentManager();
+
+        // Adding song library to root container
+        mSongLibraryFragment = Fragment_SongLibrary.newInstance();
+        mFragmentManager.beginTransaction()
+                .add(R.id.container, mSongLibraryFragment)
+                .commit();
 
         //Get a pointer to drawer layout
         mDrawerContainer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        // Add project fragment to main_activity/container
-        mProjects = new Fragment_SongLibrary();
-        mFragmentManager.beginTransaction()
-                .add(R.id.container, mProjects)
-                .commit();
-
-        // Set up pallet drawer and lock in closed position
-        fragmentPalletDrawer = (Fragment_Drawer_Pallet) mFragmentManager.findFragmentById(R.id.pallet_drawer);
-        fragmentPalletDrawer.setUp( // Set up the drawer
+        // Setting up pallet drawer on the right
+        mPalletDrawer = (Drawer_Pallet) mFragmentManager.findFragmentById(R.id.pallet_drawer);
+        mPalletDrawer.setUp( // Set up the drawer
                 R.id.pallet_drawer, // Root drawer view id, activity_main
                 mDrawerContainer); // Drawer layout id, activity_main
+
+        // Locking pallet drawer
         mDrawerContainer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
 
-        // Set up navigation drawer
-        fragmentNavigationDrawer = (Fragment_Drawer_Navigation) mFragmentManager.findFragmentById(R.id.navigation_drawer);
-        fragmentNavigationDrawer.setUp( // Set up the drawer
+        // Setting up navigation drawer on the left
+        mNavigationDrawer = (Drawer_Navigation) mFragmentManager.findFragmentById(R.id.navigation_drawer);
+        mNavigationDrawer.setUp( // Set up the drawer
                 R.id.navigation_drawer, // Root drawer view id, activity_main
                 mDrawerContainer); // Drawer layout id, activity_main
     }
 
     // Initialize dummy data
     private void initData() {
+
         // Creating dummy song data
-        Song songDummy1 = new Song("My Awesome Song"); // Song
+        Song song = new Song();
+        song.setDescription("My Song");
 
-        songDummy1.addSection(new Section("Lead Synth 1"), 0); // Track 1
-        songDummy1.addSection(new Section("Pad 1"), 0); // Track 2
+        // Creating mSections
+        // Lead synth
+        Section synthHarp = new Section("Electro 2");
+        synthHarp.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO2], 0, 2, 4), 0); // Adding fitMedia
+        song.addSection(synthHarp, 0);
+        // Organ
+        Section organ = new Section("Electro 3");
+        organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 0, 1, 3), 0); // Adding fitMedia
+        //organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 1, 4, 5), 1); // Adding fitMedia
+        song.addSection(organ, 1);
+        // Electro
+        Section electro = new Section("Electro 1");
+        electro.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO1], 0, 2, 3), 0); // Adding fitMedia
+        song.addSection(electro, 2);
 
-        ArrayList<Section> group1List = new ArrayList<Section>();
-        group1List.add(new Section("Clap 1")); // Track 3
-        group1List.add(new Section("Snare 3")); // Track 4
-        group1List.add(new Section("Snare 2")); // Track 5
-        songDummy1.addGroup(new Group(group1List, "Rhythm Section"), 0); // Group 1
 
-        mSongLibrary.addSong(songDummy1);
-
+        // Adding song to song library
+        mSongLibrary.addSong(song);
     }
 
-    // Make pallet drawer available
-    private void togglePalletDrawer(boolean setTo) {
-        // Enable and disable pallet based on currently showing fragment, i.e. song and track fragments
-        if (setTo) { mDrawerContainer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);}
-        else { mDrawerContainer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);}
+    public Song getSong() {
+        return mSong;
     }
 
-    // Close drawers
+    public void setSong(Song to) {
+        this.mSong = to;
+    }
+
+    public Section getSection() {
+        return mSection;
+    }
+
+    public void setSection(Section to) {
+        this.mSection = to;
+    }
+
+    // Lock or unlock the pallet drawer
+    private void setPalletDrawerLockMode(int to) {
+        if(mDrawerContainer != null) { mDrawerContainer.setDrawerLockMode(to, Gravity.END); }
+    }
+
+    // Close both drawers
     public void closeDrawers() {
         mDrawerContainer.closeDrawers();
     }
@@ -98,53 +143,81 @@ public class Activity_Main
         mDrawerContainer.openDrawer(Gravity.RIGHT);
     }
 
-    // Update the main content by replace fragments
-    public void updateContainer(Fragment to, Boolean isPalletVisible) {
+    // Set new mode: song library, song editor, section editor
+    public void setMode(Mode to) {
+
+        // Fragment settings
+        boolean isPalletVisible; // True for SONG_EDITOR and SECTION_EDITOR
+        boolean isFabVisible; // True for SONG_EDITOR and SECTION_EDITOR
+        Fragment switchTo;
+
+        switch (to) {
+            case SONG_EDITOR:
+                switchTo = Fragment_SongEdit.newInstance(mSong);
+                isPalletVisible = true;
+                isFabVisible = true;
+                break;
+            case SECTION_EDITOR:
+                switchTo = Fragment_SectionEdit.newInstance(mSection);
+                isPalletVisible = true;
+                isFabVisible = true;
+                break;
+            default:
+            case SONG_LIBRARY:
+                switchTo = Fragment_SongLibrary.newInstance();
+                isPalletVisible = false;
+                isFabVisible = false;
+                break;
+        }
+
+        // Replace current fragment with new fragment
         mFragmentManager.beginTransaction()
-                .replace(R.id.container, to)
+                .replace(R.id.container, switchTo)
                 .commit();
 
-        togglePalletDrawer(isPalletVisible);
+        // Configure pallet drawer
+        if(isPalletVisible) { setPalletDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED); }
+        else { setPalletDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED); }
+
+        // Configure floating action button
+        // if(isFabVisible) { showFab(); }
+        // else { hideFab(); }
+
+        // Update mMode
+        mMode = to;
     }
 
     // Navigation drawer click listener
     public void onNavigationDrawerItemSelected(int position) {
-
-        // Default fragment, landing page
-        Fragment switchToFragment = mProjects;
-
-        // Chose replacement fragment based on selection
+        // Choosing replacement fragment
+        Mode to;
         switch (position) {
-            case 0:             // Projects
-                switchToFragment = mProjects;
+            case 1: // Collab Cloud, Friend Zone
+                to = Mode.SONG_LIBRARY;
                 break;
-            case 1:             // Collab Cloud, Friend Zone
-                // switchToFragment = Fragment_Projects.newInstance();
+            case 2: // Games
+                to = Mode.SONG_LIBRARY;
                 break;
-            case 2:             // Games
-                // switchToFragment = Fragment_Projects.newInstance();
+            case 3: // Settings
+                to = Mode.SONG_LIBRARY;
                 break;
-            case 3:             // Settings
-                // switchToFragment = Fragment_Projects.newInstance();
+
+            default:
+            case 0: // Song Library
+                to = Mode.SONG_LIBRARY;
                 break;
         }
 
-        // Replacing fragment and hiding pallet drawer, if activity_main has already been inflated
-        if (mDrawerContainer != null) {
-            updateContainer(switchToFragment, false);
-        }
-
+        // Replacing fragment
+        Log.v("Activity_Main", to.toString());
+        setMode(to);
     }
 
-    // Pallet drawer click listener
-    public void onPalletDrawerItemSelected(int position) {
-        // TODO: Play clip functionality
-    }
     public void onPalletDrawerItemDrag(ExpandableList_Child item, View view) {
-        // TODO: Drag and drop functionality
-        //Toast.makeText(getApplicationContext(), "Drag start: " + item.getName(), Toast.LENGTH_SHORT).show();
 
-        // Saving data to be trasferred to drop target, i.e. song fragment
+
+
+        // Saving data to be transferred to drop target, i.e. song fragment
         ClipData data = ClipData.newPlainText(item.getName(), item.getTag());
 
         // Creating shadow builder and show for dragging

@@ -1,18 +1,25 @@
 package data;
 
+import android.util.Log;
+
+import java.io.Serializable;
+
 /**
  * Created by davidhendon on 11/19/14.
  */
-public class IfStatement {
-
+public class IfStatement extends Group implements Serializable {
+    private static final long serialVersionUID = 5L;
     String firstItem;
     String secondItem;
     String conditional;
+    private String TAG = "ifstatement";
+    private Song parentSong;
 
-    public IfStatement(String firstItem, String secondItem, String comparison) {
+    public IfStatement(String firstItem, String secondItem, String comparison, Song parentSong) {
         this.firstItem = firstItem;
         this.secondItem = secondItem;
         this.conditional = comparison;
+        this.parentSong = parentSong;
     }
 
     /**
@@ -24,8 +31,47 @@ public class IfStatement {
      */
     public boolean evaluate() {
         // firstItem COMPARISON secondItem
-        // TODO implement this, probably using case statements, or just make them objects.
-        return false;
+        // TODO implement a "Statement" object that can be AND-ed or OR-ed
+        // If either item is a variable, then replace it's value with the numeric value.
+        double firstValue = Double.NEGATIVE_INFINITY;
+        double secondValue = Double.NEGATIVE_INFINITY;
+        try {
+            firstValue = Double.parseDouble(firstItem);
+        } catch (NumberFormatException e) {
+        }
+        try {
+            secondValue = Double.parseDouble(firstItem);
+        } catch (NumberFormatException e) {
+        }
+
+        if (Double.isInfinite(firstValue)) {
+            if (parentSong.getVariables().containsKey(firstItem)) {
+                firstValue = Double.parseDouble(parentSong.getVariables().get(firstItem));
+            }
+        } else if (Double.isInfinite(secondValue)) {
+            // TODO: Lookup value from Variable
+            if (parentSong.getVariables().containsKey(secondItem)) {
+                firstValue = Double.parseDouble(parentSong.getVariables().get(secondItem));
+            }
+        }
+
+        // By now, values are assigned
+        if (conditional.equals(Util.CONDITIONALS[Util.Conditionals.EQUAL])) {
+            return firstValue == secondValue;
+        } else if (conditional.equals((Util.CONDITIONALS[Util.Conditionals.NOTEQUAL]))) {
+            return firstValue != secondValue;
+        } else if (conditional.equals((Util.CONDITIONALS[Util.Conditionals.GREATERTHAN]))) {
+            return firstValue > secondValue;
+        } else if (conditional.equals((Util.CONDITIONALS[Util.Conditionals.GREATERTHANOREQUAL]))) {
+            return firstValue >= secondValue;
+        } else if (conditional.equals((Util.CONDITIONALS[Util.Conditionals.LESSTHAN]))) {
+            return firstValue < secondValue;
+        } else if (conditional.equals((Util.CONDITIONALS[Util.Conditionals.LESSTHANOREQUAL]))) {
+            return firstValue <= secondValue;
+        } else {
+            Log.e(TAG, "Unrecognized conditional: " + conditional);
+            return false;
+        }
     }
 
     public String getFirstItem() {

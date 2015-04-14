@@ -17,7 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 
-public class Fragment_Drawer_Navigation extends Fragment {
+public class Drawer_Navigation extends Fragment {
     // Remember the position of the selected item.
     private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
 
@@ -50,7 +50,7 @@ public class Fragment_Drawer_Navigation extends Fragment {
         }
 
         // Select either the default item (0) or the last selected item.
-        selectItem(mCurrentSelectedPosition);
+        // selectItem(mCurrentSelectedPosition);
     }
 
     @Override

@@ -2,7 +2,8 @@
 <resources>
     <!-- Color Constants -->
     <color name="grey">#747475</color>
-    <color name="greyDark">#444444</color>
+    <color name="greyDark">#555555</color>
+    <color name="greyDarker">#444444</color>
     <color name="black">#222222</color>
     <color name="transparent">#0000</color>
 
@@ -18,4 +19,11 @@
 
     <!-- Palettes -->
     <color name="background">#747475</color>
+
+    <!-- Minimap -->
+    <color name="yellow">#E6B72E</color>
+    <color name="cyan">#17DA99</color>
+    <color name="blueDark">#095271</color>
+    <color name="orange">#E89257</color>
+
 </resources>

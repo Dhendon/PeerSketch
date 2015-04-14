@@ -1,19 +1,22 @@
 package data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by davidhendon on 10/28/14.
  * This is the representation of a Song object and will be used to generate a block.
  */
-public class Song {
-    String name;
-    List<Section> sections; // Track
+public class Song extends Group implements Serializable {
+    private static final long serialVersionUID = 7L;
+    List<Section> sections;
     List<ForLoop> forLoops;
     List<IfStatement> ifStatements;
     List<ESSetEffect> effects;
-    List<Group> groups; // Track groupings
+    List<Group> groups;
+    HashMap<String, String> variables;
     int tempoBPM;
     int phraseLength;
     String description;
@@ -22,16 +25,8 @@ public class Song {
         this(120);
     }
 
-    public Song(String name) {
-        this.name = name;
-        this.tempoBPM = 120;
-        this.phraseLength = 8;
-        this.sections = new ArrayList<Section>();
-        this.groups = new ArrayList<Group>();
-    }
-
     public Song(int tempoBPM) {
-        this(tempoBPM,8,"");
+        this(tempoBPM, 8, "");
     }
 
     public Song(int tempoBPM, int phraseLength, String description) {
@@ -42,6 +37,7 @@ public class Song {
         this.tempoBPM = tempoBPM;
         this.phraseLength = phraseLength;
         this.sections = sections;
+        this.groups = new ArrayList<Group>();
         this.forLoops = new ArrayList<ForLoop>();
         this.effects = new ArrayList<ESSetEffect>();
         this.description = description;
@@ -49,10 +45,20 @@ public class Song {
 
     public void addSection(Section section, int location) {
         if (validLocation(location, sections)) {
+            section.setSectionNumber(location);
             sections.add(location, section);
         } else {
+            section.setSectionNumber(0);
             sections.add(section);
         }
+    }
+
+    public HashMap<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(HashMap<String, String> variables) {
+        this.variables = variables;
     }
 
     public void addGroup(Group group, int location) {
@@ -85,6 +91,15 @@ public class Song {
         return location <= list.size() && location >= 0;
     }
 
+    public boolean addVariable(String variable, String value) {
+        if (variables.containsKey(variable)) {
+            return false;
+        } else {
+            variables.put(variable, value);
+            return true;
+        }
+    }
+
     public int getTempoBPM() {
         return tempoBPM;
     }
@@ -109,9 +124,44 @@ public class Song {
         this.description = description;
     }
 
-    public String getName() { return name; }
+    public List<Section> getSections() {
+        return sections;
+    }
 
-    public List<Group> getGroups() { return groups; }
+    public void setSections(List<Section> sections) {
+        this.sections = sections;
+    }
 
-    public List<Section> getSections() { return sections; }
+    public List<ForLoop> getForLoops() {
+        return forLoops;
+    }
+
+    public void setForLoops(List<ForLoop> forLoops) {
+        this.forLoops = forLoops;
+    }
+
+    public List<IfStatement> getIfStatements() {
+        return ifStatements;
+    }
+
+    public void setIfStatements(List<IfStatement> ifStatements) {
+        this.ifStatements = ifStatements;
+    }
+
+    public List<ESSetEffect> getEffects() {
+        return effects;
+    }
+
+    public void setEffects(List<ESSetEffect> effects) {
+        this.effects = effects;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
+    }
+
 }

@@ -27,6 +27,7 @@ public class ExpandableList_Group {
         this.items = items;
     }
 
+
     public boolean hasItems() {
         if (items.size() > 0) { return true; }
         else { return false; }

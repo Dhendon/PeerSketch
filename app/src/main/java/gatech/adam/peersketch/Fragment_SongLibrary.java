@@ -13,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import data.Song;
@@ -40,7 +39,7 @@ public class Fragment_SongLibrary extends Fragment {
                              Bundle savedInstanceState) {
 
         // Inflate rootView to activity_main/container and get pointer
-        View rootView = inflater.inflate(R.layout.fragment_projects, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_song_library, container, false);
 
         // Get pointer to main activity
         mActivity = (Activity_Main) getActivity();
@@ -52,7 +51,7 @@ public class Fragment_SongLibrary extends Fragment {
         // Adding song titles to list
         for (int i = 0 ; i < songLibrarySize; i++) {
             Song song = mActivity.mSongLibrary.getSong(i);
-            songtTitle_list.add(song.getName());
+            songtTitle_list.add(song.getDescription());
         }
 
         // Creating array adapter
@@ -70,12 +69,12 @@ public class Fragment_SongLibrary extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Setting song
+                Song song = mActivity.mSongLibrary.getSong(position);
+                mActivity.setSong(song);
 
-                Fragment to = Fragment_Song.newInstance(position);
-
-                // Replacing main activity fragment, making pallet drawer visible
-                Activity_Main main = (Activity_Main) getActivity();
-                main.updateContainer(to, true);
+                // Changing mode to song editor
+                mActivity.setMode(Activity_Main.Mode.SONG_EDITOR);
             }
         });
 
