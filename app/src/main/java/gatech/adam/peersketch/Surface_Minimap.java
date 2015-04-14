@@ -59,7 +59,7 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
         getHolder().addCallback(this);
 
         frameWidth = context.getResources().getDisplayMetrics().widthPixels;
-        frameHeight = 300;
+        frameHeight = 636;
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(context.getResources().getColor(R.color.brown));   // Sets background color

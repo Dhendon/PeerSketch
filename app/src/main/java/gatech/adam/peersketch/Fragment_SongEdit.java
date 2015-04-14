@@ -104,6 +104,10 @@ public class Fragment_SongEdit extends Fragment {
         return rootView;
     }
 
+    public void addSection(Section section) {
+        mSong.addSection(section, 0);
+    }
+
     public Section getSection(int groupPosition) {
         return mSections.get(groupPosition);
     }

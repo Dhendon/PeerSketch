@@ -14,6 +14,8 @@ import com.melnykov.fab.FloatingActionButton;
 
 import java.util.ArrayList;
 
+import data.Section;
+
 public class Fragment_Fab extends Fragment {
     private Activity_Main mActivity;
     private FloatingActionButton mFabRoot, mFabSection, mFabGroup, mFabIf, mFabFor;
@@ -66,8 +68,15 @@ public class Fragment_Fab extends Fragment {
         mFabRoot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Toggling visibility
                 toggleVisibility();
+            }
+        });
+
+        // Setting fab section listener
+        mFabSection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addSection(new Section("New Section"));
             }
         });
 
@@ -75,6 +84,10 @@ public class Fragment_Fab extends Fragment {
         hide();
 
         return rootView;
+    }
+
+    public void addSection(Section section) {
+        // TODO:
     }
 
     public void toggleVisibility() {

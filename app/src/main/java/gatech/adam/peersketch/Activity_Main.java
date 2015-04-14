@@ -4,9 +4,11 @@
 package gatech.adam.peersketch;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -83,6 +85,7 @@ public class Activity_Main
         mNavigationDrawer.setUp( // Set up the drawer
                 R.id.navigation_drawer, // Root drawer view id, activity_main
                 mDrawerContainer); // Drawer layout id, activity_main
+
     }
 
     // Initialize dummy data
@@ -97,19 +100,41 @@ public class Activity_Main
         Section synthHarp = new Section("Electro 2");
         synthHarp.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO2], 0, 2, 4), 0); // Adding fitMedia
         song.addSection(synthHarp, 0);
+
         // Organ
         Section organ = new Section("Electro 3");
         organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 0, 1, 3), 0); // Adding fitMedia
         //organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 1, 4, 5), 1); // Adding fitMedia
         song.addSection(organ, 1);
+
         // Electro
         Section electro = new Section("Electro 1");
         electro.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO1], 0, 2, 3), 0); // Adding fitMedia
         song.addSection(electro, 2);
 
+        // Electro
+        Section electro2 = new Section("Electro 1");
+        electro2.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ORGAN], 0, 2, 3), 0); // Adding fitMedia
+        song.addSection(electro2, 3);
 
         // Adding song to song library
         mSongLibrary.addSong(song);
+    }
+
+    @Override
+    public void onBackPressed() {
+        switch (mMode) {
+            case SECTION_EDITOR:
+                setMode(Mode.SONG_EDITOR);
+                break;
+            case SONG_EDITOR:
+                setMode(Mode.SONG_LIBRARY);
+                break;
+            default:
+            case SONG_LIBRARY:
+                super.onBackPressed();
+                break;
+        }
     }
 
     public Song getSong() {
@@ -179,13 +204,11 @@ public class Activity_Main
         if(isPalletVisible) { setPalletDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED); }
         else { setPalletDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED); }
 
-        // Configure floating action button
-        // if(isFabVisible) { showFab(); }
-        // else { hideFab(); }
-
         // Update mMode
         mMode = to;
     }
+
+
 
     // Navigation drawer click listener
     public void onNavigationDrawerItemSelected(int position) {
