@@ -527,28 +527,31 @@ public class ESAudio extends Thread {
                 // This assumes a well constructed playTimeMS list.
                 for (int i = 0; i < playTimeMS.size(); i++) {
                     // This assumes that the latency of this search isn't enough to ruin the timing.
-                    if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) + TICK_MS &&
-                            currentTimeMS > playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) - TICK_MS) {
+                    if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) + TICK_MS/2 &&
+                            currentTimeMS > playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) - TICK_MS/2) {
                         //currentPairIndex = new Pair<Integer, Integer>(i, MakeBeatIndices.PLAY_START);
+                        int playDurationMS = playTimeMS.get(i).get(MakeBeatIndices.PLAY_END)
+                                - playTimeMS.get(i).get(MakeBeatIndices.PLAY_START);
                         if (millisUntilFinished <= durationMilliseconds) {
                             mediaPlayer.pause();
-                            if (startTimeMilliseconds > 0) {
+                            if (startTimeMilliseconds >= 0) {
                                 mediaPlayer.seekTo(0);
+                                Log.i(TAG, "MediaPlayer seeking to 0 at " + currentTimeMS + "ms");
                             }
                             mediaPlayer.start();
                             Log.i(TAG, "MediaPlayer starting at " + currentTimeMS + "ms");
                         }
                         break;
                     } else if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.REST_START)
-                            + TICK_MS && currentTimeMS
-                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS) {
+                            + TICK_MS/2 && currentTimeMS
+                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS/2) {
                         //currentPairIndex = new Pair<Integer, Integer>(i, MakeBeatIndices.REST_START);
                         if (millisUntilFinished <= durationMilliseconds) {
-                            if (startTimeMilliseconds > 0) {
+                            if (startTimeMilliseconds >= 0) {
                                 mediaPlayer.seekTo(0);
                             }
-                            mediaPlayer.start();
-                            Log.i(TAG, "MediaPlayer starting at " +
+                            mediaPlayer.pause();
+                            Log.i(TAG, "MediaPlayer resting at " +
                                     (endTimeMilliseconds - millisUntilFinished) + "ms");
                         }
                         break;
@@ -633,7 +636,7 @@ public class ESAudio extends Thread {
                         if (millisUntilFinished <= durationMilliseconds) {
                             if (mediaPlayer.isPlaying()) {
                                 mediaPlayer.pause();
-                                Log.i(TAG, "MediaPlayer is playing, stopping it at " +
+                                Log.i(TAG, "MediaPlayer is playing, pausing it at " +
                                         currentTimeMS + "ms");
                             }
                             if (startTimeMilliseconds > 0) {
@@ -642,10 +645,161 @@ public class ESAudio extends Thread {
                             }
                             mediaPlayer.start();
                             Log.i(TAG, "MediaPlayer starting at " + currentTimeMS + "ms");
+                            // Idea: Mini CountdownTimer here, just for the length of play_end-play_start
                         }
                     } else if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.REST_START)
-                            + TICK_MS && currentTimeMS
-                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS) {
+                            + TICK_MS/2 && currentTimeMS
+                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS/2) {
+                        if (millisUntilFinished <= durationMilliseconds) {
+                            if (startTimeMilliseconds > 0) {
+                                mediaPlayer.seekTo(0);
+                                Log.i(TAG, "MediaPlayer is seeking to 0ms");
+                            }
+                            mediaPlayer.start();
+                            Log.i(TAG, "MediaPlayer starting at " +
+                                    (endTimeMilliseconds - millisUntilFinished) + "ms");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
+            }
+        }.start();
+        playTimers.add(playTimer);
+        return true;
+    }
+
+    public static boolean play(ESMakeBeat makeBeat, Context context, int tempoBPM,
+                               int phraseLength, boolean useless) {
+        if (makeBeat == null) {
+            Log.i(TAG, "play - makeBeat is null");
+            makeBeat = new ESMakeBeat("", 0, 0, Util.DEFAULT_BEATS[0]);
+            //makeBeat = new ESMakeBeat(Util.DEFAULT_SAMPLES[1], 0, 0.5, 1);
+            //TODO: make this less jank
+            //return false;
+        }
+        if (context == null) {
+            Log.i(TAG, "play - context is null");
+            return false;
+        }
+        if (!makeBeat.isValid()) {
+            Log.i(TAG, "play - makeBeat is invalid, makeBeat=" + makeBeat.toString());
+            return false;
+        }
+
+        int sampleId = Util.getSampleIDFromName(makeBeat.getSampleName());
+        if (sampleId == -1) {
+            Log.i(TAG, "play - sampleID is invalid, name=" + makeBeat.getSampleName());
+            return false;
+        }
+        //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        //Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
+
+        // Schedule when it needs to be played
+        final int startTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation(),
+                tempoBPM, phraseLength);
+        // TODO: Add in the end time
+        final int endTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation() +
+                makeBeat.getBeatPattern().length() * BEAT_LENGTH, tempoBPM, phraseLength);
+        final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+
+        final List<List<Integer>> playTimeMS = calcPlayTimesMSFromMakeBeat(makeBeat, tempoBPM,
+                phraseLength);
+        for(List<Integer> list : playTimeMS) {
+            Log.i(TAG,"playTimeMS: " + list);
+        }
+
+        // TODO: Add in for loops / conditionals affecting the playing of the song.
+        // Play it
+
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            Log.i(TAG, "MediaPlayer is playing, stopping it");
+        }
+
+        // This will not work.. still needs a main timer to coordinate them playing.
+        int playIndex = 0;
+        while (playIndex < playTimeMS.size()) {
+            int playDurationMS = playTimeMS.get(playIndex).get(MakeBeatIndices.PLAY_END)
+                    - playTimeMS.get(playIndex).get(MakeBeatIndices.PLAY_START);
+            int restDurationMS = playTimeMS.get(playIndex).get(MakeBeatIndices.REST_END)
+                    - playTimeMS.get(playIndex).get(MakeBeatIndices.REST_START);
+            int duration = 0;
+            if (playDurationMS == 0) {
+                duration = restDurationMS;
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+            } else {
+                duration = playDurationMS;
+                mediaPlayer.start();
+            }
+            mediaPlayer.pause();
+            CountDownTimer playTimer = new CountDownTimer(duration, duration) {
+                @Override
+                public void onTick(long millisUntilFinished) {}
+
+                @Override
+                public void onFinish() {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.pause();
+                    }
+                }
+            }.start();
+            playTimers.add(playTimer);
+        }
+            /*
+             Ignore the error message: Should have subtitle controller already set
+             it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
+             */
+        CountDownTimer playTimer = new CountDownTimer(endTimeMilliseconds,
+                TICK_MS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long currentTimeMS = endTimeMilliseconds - millisUntilFinished;
+                //Pair<Integer, Integer> currentPairIndex;
+                // This assumes a well constructed playTimeMS list.
+                for (int i = 0; i < playTimeMS.size(); i++) {
+                    // This assumes that the latency of this search isn't enough to ruin the timing.
+                    if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) + TICK_MS/2 &&
+                            currentTimeMS > playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) - TICK_MS/2) {
+                        if (millisUntilFinished <= durationMilliseconds) {
+                            if (mediaPlayer.isPlaying()) {
+                                mediaPlayer.pause();
+                                Log.i(TAG, "MediaPlayer is playing, pausing it at " +
+                                        currentTimeMS + "ms");
+                            }
+                            if (startTimeMilliseconds > 0) {
+                                mediaPlayer.seekTo(0);
+                                Log.i(TAG, "MediaPlayer is seeking to 0ms");
+                            }
+                            mediaPlayer.start();
+                            Log.i(TAG, "MediaPlayer starting at " + currentTimeMS + "ms");
+                            // Idea: Mini CountdownTimer here, just for the length of play_end-play_start
+                            int playDurationMS = playTimeMS.get(i).get(MakeBeatIndices.PLAY_END)
+                                    - playTimeMS.get(i).get(MakeBeatIndices.PLAY_START);
+                            CountDownTimer miniPlayTimer = new CountDownTimer(playDurationMS,
+                                    playDurationMS) {
+                                @Override
+                                public void onTick(long millisUntilFinished) {}
+
+                                @Override
+                                public void onFinish() {
+                                    if (mediaPlayer.isPlaying()) {
+                                        mediaPlayer.pause();
+                                    }
+                                }
+                            }.start();
+                        }
+                    } else if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.REST_START)
+                            + TICK_MS/2 && currentTimeMS
+                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS/2) {
                         if (millisUntilFinished <= durationMilliseconds) {
                             if (startTimeMilliseconds > 0) {
                                 mediaPlayer.seekTo(0);
