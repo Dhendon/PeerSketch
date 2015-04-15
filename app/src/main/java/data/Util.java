@@ -8,9 +8,33 @@ import gatech.adam.peersketch.R;
  * Created by davidhendon on 11/20/14.
  */
 public class Util {
-    public static final int[] DEFAULT_SAMPLE_IDS = {R.raw.synth_harp_1, R.raw.clap_1,
-            R.raw.drumpad_1, R.raw.electro_1, R.raw.electro_2, R.raw.electro_3,
-            R.raw.hi_hats_1, R.raw.percussion_1, R.raw.percussion_2, R.raw.organ_1};
+    public static final int[] DEFAULT_SAMPLE_IDS = {R.raw.y07_wah_guitar,
+            R.raw.hiphop_basssub_001,
+            R.raw.hiphop_dustybassline_001,
+            R.raw.hiphop_funkbass_001,
+            R.raw.hiphop_funknass_002,
+            R.raw.hiphop_solomooglead_001,
+            R.raw.hiphop_synthplucklead_001,
+            R.raw.house_deep_sinepad_001,
+            R.raw.techno_clublead_001,
+            R.raw.techno_polylead_001,
+            R.raw.techno_polylead_007,
+            R.raw.dubstep_pad_004,
+            R.raw.hiphop_dustygroove_003,
+            R.raw.hiphop_stomp_beat_part_001,
+            R.raw.hiphop_traphop_beat_002,
+            R.raw.hiphop_traphop_beat_004,
+            R.raw.hiphop_traphop_beat_006,
+            R.raw.y58_clap_1,
+            R.raw.techno_snareroll_004,
+            R.raw.y58_drumpad_1,
+            R.raw.hiphop_hihat_roll_003,
+            R.raw.hiphop_hihat_roll_004,
+            R.raw.hiphop_hihat_roll_006,
+            R.raw.y58_percussion_1,
+            R.raw.y58_percussion_2,
+            R.raw.y07_strings,
+            R.raw.y07_horns};
     public static final String[] DEFAULT_BEATS = {"––––0+++–––0+++", "0+++0+++0+0+0+",
             "0+0+––––0+0+–0++", "0++0++0+–––0++0+", "1–001–00–0–01–00"};
     public static final String[] DEFAULT_SAMPLES = {"Synth Harp", "Clap", "Drumpad", "Electro 1",
@@ -49,16 +73,32 @@ public class Util {
     }
 
     public interface DefaultSamples {
-        public static final int SYNTH_HARP = 0;
-        public static final int CLAP = 1;
-        public static final int DRUMPAD = 2;
-        public static final int ELECTRO1 = 3;
-        public static final int ELECTRO2 = 4;
-        public static final int ELECTRO3 = 5;
-        public static final int HI_HATS = 6;
-        public static final int PERCUSSION1 = 7;
-        public static final int PERCUSSION2 = 8;
-        public static final int ORGAN = 9;
+        public static final int SUB_BASS = 0;
+        public static final int HIPHOP_BASS = 1;
+        public static final int FUNK_BASS1 = 2;
+        public static final int FUNK_BASS2 = 3;
+        public static final int SYNTH_LEAD1 = 4;
+        public static final int SYNTH_LEAD2 = 5;
+        public static final int DEEP_SYNTH_PAD = 6;
+        public static final int TECHNO_SYNTH1 = 7;
+        public static final int TECHNO_SYNTH2 = 8;
+        public static final int TECHNO_SYNTH3 = 9;
+        public static final int DUBSTEP_PAD = 10;
+        public static final int HIPHOP_DRUM_GROOVE = 11;
+        public static final int STOMP_BEAT = 12;
+        public static final int TRAP_BEAT1 = 13;
+        public static final int TRAP_BEAT2 = 14;
+        public static final int TRAP_BEAT3 = 15;
+        public static final int CLAP = 16;
+        public static final int SNARE_ROLL = 17;
+        public static final int DRUM_PAD = 18;
+        public static final int HIHAT_ROLL1 = 19;
+        public static final int HIHAT_ROLL2 = 20;
+        public static final int HIHAT_ROLL3 = 21;
+        public static final int PERCUSSION1 = 22;
+        public static final int PERCUSSION2 = 23;
+        public static final int STRINGS = 24;
+        public static final int HORNS = 25;
     }
 
     // TODO: Update these effect indexes with the EFFECTS array and add mapping to settings

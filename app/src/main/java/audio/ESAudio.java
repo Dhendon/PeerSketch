@@ -636,13 +636,11 @@ public class ESAudio extends Thread {
                         if (millisUntilFinished <= durationMilliseconds) {
                             if (mediaPlayer.isPlaying()) {
                                 mediaPlayer.pause();
+                                mediaPlayer.seekTo(0);
                                 Log.i(TAG, "MediaPlayer is playing, pausing it at " +
                                         currentTimeMS + "ms");
                             }
-                            if (startTimeMilliseconds > 0) {
-                                mediaPlayer.seekTo(0);
-                                Log.i(TAG, "MediaPlayer is seeking to 0ms");
-                            }
+
                             mediaPlayer.start();
                             Log.i(TAG, "MediaPlayer starting at " + currentTimeMS + "ms");
                             // Idea: Mini CountdownTimer here, just for the length of play_end-play_start
@@ -655,9 +653,11 @@ public class ESAudio extends Thread {
                                 mediaPlayer.seekTo(0);
                                 Log.i(TAG, "MediaPlayer is seeking to 0ms");
                             }
-                            mediaPlayer.start();
-                            Log.i(TAG, "MediaPlayer starting at " +
-                                    (endTimeMilliseconds - millisUntilFinished) + "ms");
+                            if (mediaPlayer.isPlaying()) {
+                                mediaPlayer.pause();
+                                Log.i(TAG, "MediaPlayer resting at " +
+                                        (endTimeMilliseconds - millisUntilFinished) + "ms");
+                            }
                         }
                     }
                 }
@@ -772,11 +772,11 @@ public class ESAudio extends Thread {
                         if (millisUntilFinished <= durationMilliseconds) {
                             if (mediaPlayer.isPlaying()) {
                                 mediaPlayer.pause();
+                                mediaPlayer.seekTo(0);
                                 Log.i(TAG, "MediaPlayer is playing, pausing it at " +
                                         currentTimeMS + "ms");
                             }
-                            if (startTimeMilliseconds > 0) {
-                                mediaPlayer.seekTo(0);
+                            if (startTimeMilliseconds >= 0) {
                                 Log.i(TAG, "MediaPlayer is seeking to 0ms");
                             }
                             mediaPlayer.start();
@@ -801,7 +801,7 @@ public class ESAudio extends Thread {
                             + TICK_MS/2 && currentTimeMS
                             > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS/2) {
                         if (millisUntilFinished <= durationMilliseconds) {
-                            if (startTimeMilliseconds > 0) {
+                            if (startTimeMilliseconds >= 0) {
                                 mediaPlayer.seekTo(0);
                                 Log.i(TAG, "MediaPlayer is seeking to 0ms");
                             }

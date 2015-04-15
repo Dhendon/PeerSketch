@@ -81,6 +81,7 @@ public class Fragment_SongEdit extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 Log.v("Activity_Main", "Test");
+                mTrackList.deferNotifyDataSetChanged();
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     int x = (int) event.getX();
                     int y = (int) event.getY();
@@ -150,7 +151,7 @@ public class Fragment_SongEdit extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-            mTrackList.invalidate();
+            mTrackList.deferNotifyDataSetChanged();
         }
 
     private class DragEventListener_Fragment_Song

@@ -123,7 +123,7 @@ public class Fragment_SectionEdit extends Fragment {
             @Override
             public boolean onLongClick(View v) {
                 currentSection.getFitMedias().remove(fitMedia);
-                mBlockContainer.invalidate();
+                mBlockContainer.postInvalidate();
                 return true;
             }
         });
