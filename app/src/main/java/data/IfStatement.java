@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Created by davidhendon on 11/19/14.
  */
-public class IfStatement extends Group implements Serializable {
+public class IfStatement extends Container implements Serializable {
     private static final long serialVersionUID = 5L;
     String firstItem;
     String secondItem;

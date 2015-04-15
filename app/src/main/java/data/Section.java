@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class Section extends Group implements Serializable {
+public class Section extends Container implements Serializable {
     // TODO: Implement parent instance variable, with a reference to song it's attached to.
     private static final long serialVersionUID = 6L;
     HashMap<String, List<Double>> variables;

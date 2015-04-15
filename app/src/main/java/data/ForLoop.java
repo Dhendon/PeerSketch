@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by davidhendon on 10/28/14.
  */
-public class ForLoop extends Group implements Serializable {
+public class ForLoop extends Container implements Serializable {
     private static final long serialVersionUID = 3L;
     private double start;
     private double stepSize; //TODO: check stepSize to make sure it's valid
@@ -140,7 +140,7 @@ public class ForLoop extends Group implements Serializable {
     public String toString() {
         String base = "for " + variable + " in range(" + start + ", " + end + ", " + stepSize + ")";
         String contained = "";
-        for (GroupObject object : orderedObjects) {
+        for (ContainerObject object : orderedObjects) {
             contained += "\n-->" + object.toString();
         }
         return base + contained;

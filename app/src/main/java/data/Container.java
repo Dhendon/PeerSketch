@@ -8,19 +8,19 @@ import java.util.List;
  * Created by davidhendon on 11/16/14.
  * This is a holder for a number of sections.
  */
-public class Group implements Serializable, GroupObject {
+public class Container implements Serializable, ContainerObject {
     private static final long serialVersionUID = 4L;
     List<ESFitMedia> fitMedias;
     List<ESMakeBeat> makeBeats;
     List<ESSetEffect> setEffects;
-    List<Group> subgroups;
-    List<GroupObject> orderedObjects;
+    List<Container> subgroups;
+    List<ContainerObject> orderedObjects;
     private String name;
     private ESSetEffect groupSetEffect;
 
-    public Group(String name, ESSetEffect groupSetEffect, List<ESFitMedia> fitMedias,
-                 List<ESMakeBeat> makeBeats, List<ESSetEffect> setEffects, List<Group> subgroups,
-                 List<GroupObject> orderedObjects) {
+    public Container(String name, ESSetEffect groupSetEffect, List<ESFitMedia> fitMedias,
+                     List<ESMakeBeat> makeBeats, List<ESSetEffect> setEffects, List<Container> subgroups,
+                     List<ContainerObject> orderedObjects) {
         this.name = name;
         this.groupSetEffect = groupSetEffect;
         this.fitMedias = fitMedias;
@@ -30,20 +30,20 @@ public class Group implements Serializable, GroupObject {
         this.orderedObjects = orderedObjects;
     }
 
-    public Group(String name) {
+    public Container(String name) {
         this(name, null, new ArrayList<ESFitMedia>(), new ArrayList<ESMakeBeat>(),
-                new ArrayList<ESSetEffect>(), new ArrayList<Group>(), new ArrayList<GroupObject>());
+                new ArrayList<ESSetEffect>(), new ArrayList<Container>(), new ArrayList<ContainerObject>());
     }
 
-    public Group() {
+    public Container() {
         this("");
     }
 
-    public List<GroupObject> getOrderedObjects() {
+    public List<ContainerObject> getOrderedObjects() {
         return orderedObjects;
     }
 
-    public void setOrderedObjects(List<GroupObject> orderedObjects) {
+    public void setOrderedObjects(List<ContainerObject> orderedObjects) {
         this.orderedObjects = orderedObjects;
     }
 
@@ -79,11 +79,11 @@ public class Group implements Serializable, GroupObject {
         this.setEffects = setEffects;
     }
 
-    public List<Group> getSubgroups() {
+    public List<Container> getSubgroups() {
         return subgroups;
     }
 
-    public void setSubgroups(List<Group> subgroups) {
+    public void setSubgroups(List<Container> subgroups) {
         this.subgroups = subgroups;
     }
 
@@ -103,19 +103,19 @@ public class Group implements Serializable, GroupObject {
         makeBeats.add(makeBeat);
     }
 
-    public void add(int location, GroupObject object) {
+    public void add(int location, ContainerObject object) {
         orderedObjects.add(location, object);
     }
 
-    public void add(Group group) {
-        subgroups.add(group);
+    public void add(Container container) {
+        subgroups.add(container);
     }
 
-    public void add(int location, Group group) {
-        subgroups.add(location, group);
+    public void add(int location, Container container) {
+        subgroups.add(location, container);
     }
 
-    public void addObject(GroupObject object) {
+    public void addObject(ContainerObject object) {
         orderedObjects.add(object);
     }
 

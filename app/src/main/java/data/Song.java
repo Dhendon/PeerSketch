@@ -8,13 +8,13 @@ import java.util.List;
  * Created by davidhendon on 10/28/14.
  * This is the representation of a Song object and will be used to generate a block.
  */
-public class Song extends Group implements Serializable {
+public class Song extends Container implements Serializable {
     private static final long serialVersionUID = 7L;
     List<Section> sections;
     List<ForLoop> forLoops;
     List<IfStatement> ifStatements;
     List<ESSetEffect> effects;
-    List<Group> groups;
+    List<Container> containers;
     int tempoBPM;
     int phraseLength;
     String description;
@@ -51,11 +51,11 @@ public class Song extends Group implements Serializable {
     }
 
 
-    public void addGroup(Group group, int location) {
-        if (validLocation(location, groups)) {
-            groups.add(location, group);
+    public void addGroup(Container container, int location) {
+        if (validLocation(location, containers)) {
+            containers.add(location, container);
         } else {
-            groups.add(group);
+            containers.add(container);
         }
     }
 
@@ -138,12 +138,12 @@ public class Song extends Group implements Serializable {
         this.effects = effects;
     }
 
-    public List<Group> getGroups() {
-        return groups;
+    public List<Container> getContainers() {
+        return containers;
     }
 
-    public void setGroups(List<Group> groups) {
-        this.groups = groups;
+    public void setContainers(List<Container> containers) {
+        this.containers = containers;
     }
 
 }

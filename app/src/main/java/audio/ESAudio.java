@@ -10,11 +10,11 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.ContainerObject;
 import data.ESFitMedia;
 import data.ESMakeBeat;
 import data.ESSetEffect;
 import data.ForLoop;
-import data.GroupObject;
 import data.IfStatement;
 import data.Section;
 import data.Util;
@@ -184,7 +184,7 @@ public class ESAudio extends Thread {
         }
         List<ESFitMedia> allFitMedias = new ArrayList<ESFitMedia>();
         List<ESMakeBeat> allMakeBeats = new ArrayList<ESMakeBeat>();
-        for (GroupObject object : section.getOrderedObjects()) {
+        for (ContainerObject object : section.getOrderedObjects()) {
             if (object.getClass() == ESMakeBeat.class) {
                 ESMakeBeat makeBeat = (ESMakeBeat) object;
                 //play(makeBeat, context, section.getTempoBPM(),section.getPhraseLengthMeasures());
@@ -197,7 +197,7 @@ public class ESAudio extends Thread {
                 // TODO: Implement this.
             } else if (object.getClass() == ForLoop.class) {
                 ForLoop forLoop = (ForLoop) object;
-                for (GroupObject contained : forLoop.getOrderedObjects()) {
+                for (ContainerObject contained : forLoop.getOrderedObjects()) {
                     if (contained.getClass() == ESFitMedia.class) {
                         ESFitMedia fitMedia = (ESFitMedia) contained;
                         List<ESFitMedia> fitMedias = getFitMediaListFromForLoop(fitMedia, forLoop);
@@ -244,7 +244,7 @@ public class ESAudio extends Thread {
         List<ESFitMedia> allFitMedias = new ArrayList<ESFitMedia>();
         List<ESMakeBeat> allMakeBeats = new ArrayList<ESMakeBeat>();
 
-        for (GroupObject contained : forLoop.getOrderedObjects()) {
+        for (ContainerObject contained : forLoop.getOrderedObjects()) {
             if (contained.getClass() == ESFitMedia.class) {
                 ESFitMedia fitMedia = (ESFitMedia) contained;
                 List<ESFitMedia> fitMedias = getFitMediaListFromForLoop(fitMedia, forLoop);
@@ -349,7 +349,7 @@ public class ESAudio extends Thread {
     }
 
     public static void executeForLoop(ForLoop forLoop, Section section, Context context) {
-        for (GroupObject contained : forLoop.getOrderedObjects()) {
+        for (ContainerObject contained : forLoop.getOrderedObjects()) {
             if (contained.getClass() == ESFitMedia.class) {
                 ESFitMedia fitMedia = (ESFitMedia) contained;
                 List<Pair<Double, Double>> playTimes =

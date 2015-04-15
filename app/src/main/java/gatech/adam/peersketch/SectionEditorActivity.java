@@ -19,12 +19,12 @@ import android.widget.Toast;
 import java.util.List;
 
 import audio.ESAudio;
+import data.Container;
+import data.ContainerObject;
 import data.ESFitMedia;
 import data.ESMakeBeat;
 import data.ESSetEffect;
 import data.ForLoop;
-import data.Group;
-import data.GroupObject;
 import data.IfStatement;
 import data.Section;
 import data.Util;
@@ -48,7 +48,7 @@ public class SectionEditorActivity extends FragmentActivity
 
     public static String TAG = "section-editor";
     private Section currentSection;
-    private Group selectedToAddGroup;
+    private Container selectedToAddContainer;
     private ListView mListView;
     private Button mFitMediaButton;
     private Button mPlayButton;
@@ -145,7 +145,7 @@ public class SectionEditorActivity extends FragmentActivity
                 List<ESFitMedia> currentFitMedias = currentSection.getFitMedias();
                 if (position < currentForLoops.size()) {
                     int forLoopIndex = position;
-                    selectedToAddGroup = currentForLoops.get(forLoopIndex);
+                    selectedToAddContainer = currentForLoops.get(forLoopIndex);
                     promptForLoopChoiceDialog();
                 } else if (position < currentFitMedias.size() + forLoops.size()) {
                     int fitMediaIndex = position - currentFitMedias.size();
@@ -166,7 +166,7 @@ public class SectionEditorActivity extends FragmentActivity
                         ESAudio.play(selectedFitMedia, context, songBPM, songPhraseLength);
                     }
                     Log.i(TAG, "Playing fitMedia at position: " + position);
-                    selectedToAddGroup = null;
+                    selectedToAddContainer = null;
                 } else if (position < currentFitMedias.size() + currentForLoops.size()
                         + currentMakeBeats.size()) {
                     int makeBeatIndex = position - currentFitMedias.size() - currentForLoops.size();
@@ -184,7 +184,7 @@ public class SectionEditorActivity extends FragmentActivity
                         ESAudio.play(selectedMakeBeat, context, currentSection.getTempoBPM(),
                                 currentSection.getPhraseLengthMeasures());
                     }
-                    selectedToAddGroup = null;
+                    selectedToAddContainer = null;
                 }
             }
         });
@@ -385,9 +385,9 @@ public class SectionEditorActivity extends FragmentActivity
             currentSection.addObject(value);
             //mSectionItemsAdapter.add(value.toString());
             //mSectionItemsAdapter.notifyDataSetChanged();
-            if (selectedToAddGroup != null) {
+            if (selectedToAddContainer != null) {
                 Log.i(TAG, "Added new FitMedia: " + value.toString() + " to "
-                        + selectedToAddGroup.toString());
+                        + selectedToAddContainer.toString());
                 updateGroups(value);
             } else {
                 Log.i(TAG, "Added new FitMedia: " + value.toString());
@@ -414,9 +414,9 @@ public class SectionEditorActivity extends FragmentActivity
             Toast.makeText(context, "Variable name:" + value.getVariable() + " already taken." +
                     " Please try again with a new name!", Toast.LENGTH_SHORT).show();
         } else {
-            if (selectedToAddGroup != null) {
+            if (selectedToAddContainer != null) {
                 Log.i(TAG, "Added new ForLoop: " + value.toString() + " to "
-                        + selectedToAddGroup.toString());
+                        + selectedToAddContainer.toString());
                 updateGroups(value);
             } else {
                 Log.i(TAG, "Added new ForLoop: " + value.toString());
@@ -435,9 +435,9 @@ public class SectionEditorActivity extends FragmentActivity
         currentSection.addObject(value);
         //mSectionItemsAdapter.add(value.toString());
         //mSectionItemsAdapter.notifyDataSetChanged();
-        if (selectedToAddGroup != null) {
+        if (selectedToAddContainer != null) {
             Log.i(TAG, "Added new SetEffect: " + value.toString() + " to "
-                    + selectedToAddGroup.toString());
+                    + selectedToAddContainer.toString());
             updateGroups(value);
         } else {
             Log.i(TAG, "Added new SetEffect: " + value.toString());
@@ -468,9 +468,9 @@ public class SectionEditorActivity extends FragmentActivity
             value.setSectionNumber(sectionNumber);
             currentSection.add(value, Util.DROP_LOCATION);
             currentSection.addObject(value);
-            if (selectedToAddGroup != null) {
+            if (selectedToAddContainer != null) {
                 Log.i(TAG, "Added new MakeBeat: " + value.toString() + " to "
-                        + selectedToAddGroup.toString());
+                        + selectedToAddContainer.toString());
                 updateGroups(value);
             } else {
                 Log.i(TAG, "Added new MakeBeat: " + value.toString());
@@ -483,12 +483,12 @@ public class SectionEditorActivity extends FragmentActivity
         }
     }
 
-    public void updateGroups(GroupObject value) {
-        for (Group group : currentSection.getSubgroups()) {
-            if (selectedToAddGroup.equals(group)) {
-                if (group.getClass().equals(ForLoop.class)) {
+    public void updateGroups(ContainerObject value) {
+        for (Container container : currentSection.getSubgroups()) {
+            if (selectedToAddContainer.equals(container)) {
+                if (container.getClass().equals(ForLoop.class)) {
                     List<ForLoop> forLoops = currentSection.getForLoops();
-                    ForLoop containerForLoop = (ForLoop) group;
+                    ForLoop containerForLoop = (ForLoop) container;
                     for (int i = 0; i < forLoops.size(); i++) {
                         if (forLoops.get(i).equals(containerForLoop)) {
                             forLoops.get(i).addObject(value);
@@ -509,15 +509,15 @@ public class SectionEditorActivity extends FragmentActivity
                             break;
                         }
                     }
-                } else if (group.getClass().equals(IfStatement.class)) {
+                } else if (container.getClass().equals(IfStatement.class)) {
                     // TODO when if statements are added
                     Toast.makeText(context, "TODO: implement option in createForLoop!",
                             Toast.LENGTH_LONG).show();
                 } else {
                     Log.e(TAG, "Attempted to add group of unknown type: "
-                            + group.getClass().getName());
+                            + container.getClass().getName());
                 }
-                selectedToAddGroup = null;
+                selectedToAddContainer = null;
                 break;
             }
         }

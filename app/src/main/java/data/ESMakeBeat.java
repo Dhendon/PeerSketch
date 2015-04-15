@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by davidhendon on 11/19/14.
  */
-public class ESMakeBeat implements Serializable, GroupObject {
+public class ESMakeBeat implements Serializable, ContainerObject {
     private static final long serialVersionUID = 1L;
     private String sampleName;
     private int sectionNumber;
