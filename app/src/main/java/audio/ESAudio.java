@@ -96,6 +96,9 @@ public class ESAudio extends Thread {
 
             @Override
             public void onFinish() {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
                 mediaPlayer.stop();
                 mediaPlayer.reset();
                 mediaPlayer.release();
@@ -168,6 +171,10 @@ public class ESAudio extends Thread {
 
             @Override
             public void onFinish() {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+                mediaPlayer.stop();
                 mediaPlayer.reset();
                 mediaPlayer.release();
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
@@ -418,6 +425,10 @@ public class ESAudio extends Thread {
 
             @Override
             public void onFinish() {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+                mediaPlayer.stop();
                 mediaPlayer.reset();
                 mediaPlayer.release();
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
@@ -519,6 +530,10 @@ public class ESAudio extends Thread {
 
             @Override
             public void onFinish() {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+                mediaPlayer.stop();
                 mediaPlayer.reset();
                 mediaPlayer.release();
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
@@ -623,6 +638,10 @@ public class ESAudio extends Thread {
 
             @Override
             public void onFinish() {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+                mediaPlayer.stop();
                 mediaPlayer.reset();
                 mediaPlayer.release();
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
@@ -773,6 +792,9 @@ public class ESAudio extends Thread {
 
             @Override
             public void onFinish() {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
                 mediaPlayer.reset();
                 mediaPlayer.release();
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
