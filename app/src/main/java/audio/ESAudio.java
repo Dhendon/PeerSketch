@@ -275,49 +275,6 @@ public class ESAudio extends Thread {
         }
     }
 
-    /**
-     * Calculates a list of when a for loop needs to play a sample
-     *
-     * @param forLoop
-     * @return
-     */
-    public static List<Pair<Double, Double>> singleFitMediaPlayFromForLoop(ForLoop forLoop) {
-        char operand = forLoop.getOperand();
-        double amount = forLoop.getStepSize();
-        // for var in range() --> fitMedia(var, var (operand) amount)
-        if (operand != '*' && operand != '/' && operand != '+' && operand != '%') {
-            Log.i(TAG, "Invalid Operand: " + operand);
-            return null;
-        }
-        if (operand == '/' && amount > 1) {
-            Log.i(TAG, "Attempted to divide by too small a number:" + amount);
-            return null;
-        }
-        List<Pair<Double, Double>> measures = new ArrayList<Pair<Double, Double>>();
-        // Each case corresponds to a different operand and generates a corresponding set of pairs.
-        if (operand == '+') {
-            for (double i = forLoop.getStart(); i < forLoop.getEnd(); i += forLoop.getStepSize()) {
-                measures.add(new Pair<Double, Double>(i, i + amount));
-            }
-        } else if (operand == '*') {
-            for (double i = forLoop.getStart(); i < forLoop.getEnd(); i += forLoop.getStepSize()) {
-                measures.add(new Pair<Double, Double>(i, i * amount));
-            }
-        } else if (operand == '/') {
-            for (double i = forLoop.getStart(); i < forLoop.getEnd(); i += forLoop.getStepSize()) {
-                measures.add(new Pair<Double, Double>(i, i / amount));
-            }
-        } else if (operand == '%') {
-            for (double i = forLoop.getStart(); i < forLoop.getEnd(); i += forLoop.getStepSize()) {
-                measures.add(new Pair<Double, Double>(i, i % amount));
-            }
-        }
-
-        // TODO(hendon): Allow this to handle more cases.
-        // TODO(hendon): Incorporate out of bounds error checking.
-        return measures;
-    }
-
     public static void playThenPauseThenSeekAllPairs(List<Pair<Double, Double>> measurePairs,
                                                      final Context context, final ESFitMedia fitMedia,
                                                      final int tempoBPM, final int phraseLength) {
@@ -343,7 +300,7 @@ public class ESAudio extends Thread {
             }.start();
         }
     }
-
+/*
     public static void executeForLoop(ForLoop forLoop, Section section, Context context) {
         for (GroupObject contained : forLoop.getOrderedObjects()) {
             if (contained.getClass() == ESFitMedia.class) {
@@ -361,6 +318,7 @@ public class ESAudio extends Thread {
             }
         }
     }
+    */
 
     public static boolean play(ESFitMedia fitMedia, ESSetEffect setEffect,
                                Context context, int tempoBPM, int phraseLength) {

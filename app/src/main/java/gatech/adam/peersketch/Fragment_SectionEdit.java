@@ -114,8 +114,21 @@ public class Fragment_SectionEdit extends Fragment {
         block.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ESAudio.play(fitMedia, mActivity.getApplicationContext(),
-                        mActivity.getSong().getTempoBPM(), mActivity.getSong().getPhraseLength());
+                if (fitMedia.hasVariable()) {
+                    List<ForLoop> currentForLoops = currentSection.getForLoops();
+                    for (ForLoop forLoop : currentForLoops) {
+                        if (forLoop.getVariable().equals(fitMedia.getStartVariable())) {
+                            ESAudio.playForLoopFitMedia(fitMedia, forLoop,
+                                    mActivity.getApplicationContext(),
+                                    currentSection.getTempoBPM(),
+                                    currentSection.getPhraseLengthMeasures());
+                            break;
+                        }
+                    }
+                } else {
+                    ESAudio.play(fitMedia, mActivity.getApplicationContext(),
+                            mActivity.getSong().getTempoBPM(), mActivity.getSong().getPhraseLength());
+                }
             }
         });
 
@@ -152,8 +165,21 @@ public class Fragment_SectionEdit extends Fragment {
         block.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ESAudio.play(makeBeat,mActivity.getApplicationContext(),
-                        mActivity.getSong().getTempoBPM(), mActivity.getSong().getPhraseLength());
+                if (makeBeat.hasVariable()) {
+                    List<ForLoop> currentForLoops = currentSection.getForLoops();
+                    for (ForLoop forLoop : currentForLoops) {
+                        if (forLoop.getVariable().equals(makeBeat.getStartVariable())) {
+                            ESAudio.playForLoopMakeBeat(makeBeat, forLoop,
+                                    mActivity.getApplicationContext(),
+                                    currentSection.getTempoBPM(),
+                                    currentSection.getPhraseLengthMeasures());
+                            break;
+                        }
+                    }
+                } else {
+                        ESAudio.play(makeBeat, mActivity.getApplicationContext(),
+                                mActivity.getSong().getTempoBPM(), mActivity.getSong().getPhraseLength());
+                }
             }
         });
 
