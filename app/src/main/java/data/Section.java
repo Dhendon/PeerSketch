@@ -4,6 +4,7 @@ import android.util.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -12,6 +13,7 @@ import java.util.List;
 public class Section extends Group implements Serializable {
     // TODO: Implement parent instance variable, with a reference to song it's attached to.
     private static final long serialVersionUID = 6L;
+    HashMap<String, List<Double>> variables;
     private List<ForLoop> forLoops;
     private List<IfStatement> ifStatements;
     private List<ESSetEffect> effects;
@@ -19,7 +21,6 @@ public class Section extends Group implements Serializable {
     private List<ESMakeBeat> makeBeats;
     private List<Pair<Double, Double>> activeMeasures; // TODO: update this when parameters are changed
     private String name;
-    private Song parentSong;
     private int sectionNumber;
     private int tempoBPM;
     private int phraseLengthMeasures;
@@ -35,6 +36,24 @@ public class Section extends Group implements Serializable {
         fitMedias = new ArrayList<ESFitMedia>();
         makeBeats = new ArrayList<ESMakeBeat>();
         activeMeasures = new ArrayList<Pair<Double, Double>>();
+        variables = new HashMap<String, List<Double>>();
+    }
+
+    public HashMap<String, List<Double>> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(HashMap<String, List<Double>> variables) {
+        this.variables = variables;
+    }
+
+    public boolean addVariable(String variable, List<Double> values) {
+        if (variables.containsKey(variable)) {
+            return false;
+        } else {
+            variables.put(variable, values);
+            return true;
+        }
     }
 
 
@@ -88,14 +107,6 @@ public class Section extends Group implements Serializable {
 
     private boolean validLocation(int location, List<?> list) {
         return location <= list.size() && location >= 0;
-    }
-
-    public Song getParentSong() {
-        return parentSong;
-    }
-
-    public void setParentSong(Song parentSong) {
-        this.parentSong = parentSong;
     }
 
     // TODO: Implement this method

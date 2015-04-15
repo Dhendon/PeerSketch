@@ -31,4 +31,9 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="*Test setEffect" />
+    <item
+        android:id="@+id/action_stop_all_players"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Stop All Players" />
 </menu>

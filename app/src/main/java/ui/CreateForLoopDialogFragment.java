@@ -50,7 +50,7 @@ public class CreateForLoopDialogFragment extends DialogFragment {
         final RadioButton incrementRadioButton = (RadioButton)
                 prompt.findViewById((R.id.radioButtonIncrement));
         final EditText variableEditText = (EditText) prompt.findViewById(R.id.editTextVariable);
-        builder.setTitle("Create New FitMedia")
+        builder.setTitle("Create New For Loop")
                 .setPositiveButton("Make it so!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         String rawStartLocation = startEditText.getText().toString();
@@ -60,18 +60,18 @@ public class CreateForLoopDialogFragment extends DialogFragment {
                         boolean isIncrementing = incrementRadioButton.isChecked();
                         if (!rawStartLocation.equals("") && !rawEndLocation.equals("")
                                 && !rawStepSize.equals("") && !variable.equals("")) {
-                            int start = Integer.parseInt(rawStartLocation);
-                            int end = Integer.parseInt(rawEndLocation);
-                            String directionString = isIncrementing ? "+" : "-";
+                            double start = Double.parseDouble(rawStartLocation);
+                            double end = Double.parseDouble(rawEndLocation);
+                            char operand = isIncrementing ? '+' : '-';
                             // TODO(hendon): Turn this into ToString for ForLoop.
                             Toast.makeText(getActivity().getApplicationContext(),
                                     "Made for Loop! --> for " + variable + " in range("
                                             + rawStartLocation + "," + rawEndLocation + ","
-                                            + directionString + rawStepSize + ")",
+                                            + operand + rawStepSize + ")",
                                     Toast.LENGTH_SHORT).show();
-                            int stepSize = Integer.parseInt(rawStepSize);
+                            double stepSize = Double.parseDouble(rawStepSize);
                             // TODO: Deal with the case where they make stepSize negative
-                            ForLoop value = new ForLoop(start, stepSize, end, variable);
+                            ForLoop value = new ForLoop(start, stepSize, end, variable, operand);
                             mListener.onDialogPositiveClick(CreateForLoopDialogFragment.this, value);
 
                         } else {

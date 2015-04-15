@@ -11,12 +11,55 @@ public class ESMakeBeat implements Serializable, GroupObject {
     private int sectionNumber;
     private double startLocation;
     private String beatPattern;
+    private String startVariable;
+    private char startOperand;
+    private double startAmount;
+    private boolean hasVariable;
+
+    public ESMakeBeat(String sampleName, String beatPattern, String startVariable, char startOperand, double startAmount, int sectionNumber) {
+        this.sampleName = sampleName;
+        this.beatPattern = beatPattern;
+        this.startVariable = startVariable;
+        this.startOperand = startOperand;
+        this.startAmount = startAmount;
+        this.sectionNumber = sectionNumber;
+        hasVariable = true;
+    }
 
     public ESMakeBeat(String sampleName, int sectionNumber, double startLocation, String beatPattern) {
         this.sampleName = sampleName;
         this.sectionNumber = sectionNumber;
         this.startLocation = startLocation;
         this.beatPattern = beatPattern;
+        hasVariable = false;
+    }
+
+    public boolean hasVariable() {
+        return hasVariable;
+    }
+
+    public String getStartVariable() {
+        return startVariable;
+    }
+
+    public void setStartVariable(String startVariable) {
+        this.startVariable = startVariable;
+    }
+
+    public char getStartOperand() {
+        return startOperand;
+    }
+
+    public void setStartOperand(char startOperand) {
+        this.startOperand = startOperand;
+    }
+
+    public double getStartAmount() {
+        return startAmount;
+    }
+
+    public void setStartAmount(double startAmount) {
+        this.startAmount = startAmount;
     }
 
     public String getSampleName() {
@@ -66,6 +109,9 @@ public class ESMakeBeat implements Serializable, GroupObject {
     }
 
     public String toString() {
-        return "makeBeat(" + sampleName + ", " + startLocation + " , \"" + beatPattern + "\")";
+        String indent = hasVariable ? "-->" : "";
+        String inside = hasVariable ? sampleName + " ... " : sampleName + ", " + startLocation +
+                " , \"" + beatPattern;
+        return indent + "makeBeat(" + inside + "\")";
     }
 }

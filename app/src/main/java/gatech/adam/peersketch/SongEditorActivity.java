@@ -36,7 +36,6 @@ public class SongEditorActivity extends FragmentActivity {
     private Button mButtonCreateSection;
     private ListView mListViewSongItems;
     private Context context = this;
-    private ArrayAdapter<String> sampleAdapter;
 
     private static boolean sectionNameTaken(String name) {
         for (Section section : currentSong.getSections()) {
@@ -200,7 +199,6 @@ public class SongEditorActivity extends FragmentActivity {
                             if (!sectionNameTaken(sectionName)) {
                                 int trackNumber = currentSong.getSections().size() - 1;
                                 Section newSection = new Section(sectionName);
-                                newSection.setParentSong(currentSong);
                                 currentSong.addSection(newSection, trackNumber);
                                 Intent sectionEditorIntent = new Intent(getActivity().getApplicationContext(),
                                         SectionEditorActivity.class);

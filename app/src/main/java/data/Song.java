@@ -2,7 +2,6 @@ package data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -16,7 +15,6 @@ public class Song extends Group implements Serializable {
     List<IfStatement> ifStatements;
     List<ESSetEffect> effects;
     List<Group> groups;
-    HashMap<String, String> variables;
     int tempoBPM;
     int phraseLength;
     String description;
@@ -52,13 +50,6 @@ public class Song extends Group implements Serializable {
         }
     }
 
-    public HashMap<String, String> getVariables() {
-        return variables;
-    }
-
-    public void setVariables(HashMap<String, String> variables) {
-        this.variables = variables;
-    }
 
     public void addGroup(Group group, int location) {
         if (validLocation(location, groups)) {
@@ -90,14 +81,6 @@ public class Song extends Group implements Serializable {
         return location <= list.size() && location >= 0;
     }
 
-    public boolean addVariable(String variable, String value) {
-        if (variables.containsKey(variable)) {
-            return false;
-        } else {
-            variables.put(variable, value);
-            return true;
-        }
-    }
 
     public int getTempoBPM() {
         return tempoBPM;

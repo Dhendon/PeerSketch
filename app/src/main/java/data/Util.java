@@ -25,6 +25,7 @@ public class Util {
     public static final String[] EFFECT_NAMES = {"REVERB", "VOLUME", "EQ3BAND", "PITCHSHIFT"};
     public static final String[][] EFFECT_PARAMETERS = {{"SHIFT", "BYPASS"}, {"GAIN", "BYPASS"},
             {"LOWGAIN", "LOWFREQ", "MIDGAIN", "MIDFREQ", "HIGHGAIN", "HIGHFREQ"}};
+    public static final String OPERANDS[] = {"+", "-", "*", "/", "%", "none"};
     public final static String ES_LOGIN_BASE_URL = "http://earsketch.gatech.edu/EarSketchWS";
     // TODO: Update these samples to the actual ones we'll be using.
     private static String TAG = "util";

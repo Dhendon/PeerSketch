@@ -1,19 +1,16 @@
 package ui;
 
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -21,9 +18,12 @@ import data.ESFitMedia;
 import data.Util;
 import gatech.adam.peersketch.R;
 
-public class CreateFitMediaDialogFragment extends DialogFragment {
+/**
+ * Created by hendon on 4/13/15.
+ */
+public class CreateForLoopFitmediaDialogFragment extends DialogFragment {
     public final String TAG = "create-fitmedia-dialog";
-    private FitMediaDialogListener mListener;
+    private ForLoopFitMediaDialogListener mListener;
 
     @Override
     public void onAttach(Activity activity) {
@@ -31,7 +31,7 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (FitMediaDialogListener) activity;
+            mListener = (ForLoopFitMediaDialogListener) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
@@ -64,11 +64,8 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
                 R.id.editTextEndLocation);
         final LinearLayout startVariableLayout = (LinearLayout) prompt.findViewById(R.id.layoutStartVariable);
         final LinearLayout endVariableLayout = (LinearLayout) prompt.findViewById(R.id.layoutEndVariable);
-        final RadioButton yesRadioButton = (RadioButton) prompt.findViewById(R.id.radioButtonYes);
-        final RadioButton noRadioButton = (RadioButton) prompt.findViewById(R.id.radioButtonNo);
-        noRadioButton.setChecked(true);
 
-        /*
+
         // Variable stuff
         final EditText startVariableEditText = (EditText) prompt.findViewById(R.id.editTextStartVariable);
         final Spinner startVariableOperandSpinner = (Spinner) prompt.findViewById(R.id.spinnerStartOperand);
@@ -82,47 +79,40 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         startVariableOperandSpinner.setAdapter(operandAdapter);
         endVariableOperandSpinner.setAdapter(operandAdapter);
 
-        yesRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVariableLayout.setVisibility(View.VISIBLE);
-                endVariableLayout.setVisibility(View.VISIBLE);
-                startEditText.setVisibility(View.GONE);
-                endEditText.setVisibility(View.GONE);
-            }
-        });
-        noRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVariableLayout.setVisibility(View.GONE);
-                endVariableLayout.setVisibility(View.GONE);
-                startEditText.setVisibility(View.VISIBLE);
-                endEditText.setVisibility(View.VISIBLE);
-            }
-        });
-        */
+        startVariableLayout.setVisibility(View.VISIBLE);
+        endVariableLayout.setVisibility(View.VISIBLE);
+        startEditText.setVisibility(View.GONE);
+        endEditText.setVisibility(View.GONE);
+        Toast.makeText(getActivity().getApplicationContext(),
+                "Please enter variable name and (optional) amount to modify it!",
+                Toast.LENGTH_SHORT).show();
         builder.setTitle("Create New FitMedia")
                 .setPositiveButton("Make it so!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         String sampleName = samplesSpinner.getSelectedItem().toString();
-                        String rawStartLocation = startEditText.getText().toString();
-                        String rawEndLocation = endEditText.getText().toString();
-                        if (!rawStartLocation.equals("") && !rawEndLocation.equals("")
-                                && !sampleName.equals("")) {
-                            double start = Double.parseDouble(rawStartLocation);
-                            double end = Double.parseDouble(rawEndLocation);
-                            Toast.makeText(getActivity().getApplicationContext(),
-                                    "Made FitMedia! (" + rawStartLocation + ", " + rawEndLocation + ")",
-                                    Toast.LENGTH_SHORT).show();
-                            ESFitMedia value = new ESFitMedia(sampleName, -1, start, end);
-                            mListener.onDialogPositiveClick(CreateFitMediaDialogFragment.this, value);
-
-                        } else {
-                            Toast.makeText(getActivity().getApplicationContext(),
-                                    "Invalid parameters", Toast.LENGTH_SHORT).show();
-                            Log.i(TAG, "Unable to create FitMedia");
+                        // Deal with variables
+                        String startVariable = startVariableEditText.getText().toString();
+                        String endVariable = endVariableEditText.getText().toString();
+                        // TODO: Restrict length of the operand to just one character.
+                        char startOperand = Util.OPERANDS[startVariableOperandSpinner.getSelectedItemPosition()].charAt(0);
+                        char endOperand = Util.OPERANDS[endVariableOperandSpinner.getSelectedItemPosition()].charAt(0);
+                        double startAmount = 0;
+                        String startAmountRaw = startVariableAmountEditText.getText().toString();
+                        if (startOperand != 'n' && !startAmountRaw.equals("")) {
+                            startAmount = Double.parseDouble(startAmountRaw);
                         }
-
+                        double endAmount = 0;
+                        String endAmountRaw = endVariableAmountEditText.getText().toString();
+                        if (endOperand != 'n' && !endAmountRaw.equals("")) {
+                            endAmount = Double.parseDouble(endAmountRaw);
+                        }
+                        // TODO: Ignore values if there is no operand
+                        Toast.makeText(getActivity().getApplicationContext(),
+                                "Attempting to create FitMedia!",
+                                Toast.LENGTH_SHORT).show();
+                        ESFitMedia value = new ESFitMedia(sampleName, -1, startVariable,
+                                startOperand, startAmount, endVariable, endOperand, endAmount);
+                        mListener.onDialogPositiveClick(CreateForLoopFitmediaDialogFragment.this, value);
                     }
                 })
                 .setNegativeButton("Forget it", new DialogInterface.OnClickListener() {
@@ -136,7 +126,9 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    public interface FitMediaDialogListener {
+    public interface ForLoopFitMediaDialogListener {
         public void onDialogPositiveClick(DialogFragment dialog, ESFitMedia value);
     }
 }
+
+

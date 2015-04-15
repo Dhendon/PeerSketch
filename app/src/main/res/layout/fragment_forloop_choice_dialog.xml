@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RadioGroup
+        android:id="@+id/radioGroupChoice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/radioButtonFitMedia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="fitMedia" />
+
+        <RadioButton
+            android:id="@+id/radioButtonMakeBeat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="makeBeat" />
+
+        <RadioButton
+            android:id="@+id/radioButtonForLoop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="forLoop"
+            android:visibility="gone" />
+    </RadioGroup>
+</LinearLayout>

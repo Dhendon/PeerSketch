@@ -1,12 +1,8 @@
 package gatech.adam.peersketch;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.app.FragmentActivity;
@@ -18,8 +14,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import java.util.List;
@@ -35,7 +29,10 @@ import data.IfStatement;
 import data.Section;
 import data.Util;
 import ui.CreateFitMediaDialogFragment;
+import ui.CreateForLoopChoiceDialogFragment;
 import ui.CreateForLoopDialogFragment;
+import ui.CreateForLoopFitmediaDialogFragment;
+import ui.CreateForLoopMakeBeatDialogFragment;
 import ui.CreateMakeBeatDialogFragment;
 import ui.CreateSetEffectDialogFragment;
 
@@ -44,11 +41,12 @@ public class SectionEditorActivity extends FragmentActivity
         implements CreateFitMediaDialogFragment.FitMediaDialogListener,
         CreateForLoopDialogFragment.ForLoopDialogListener,
         CreateMakeBeatDialogFragment.MakeBeatDialogListener,
-        CreateSetEffectDialogFragment.SetEffectDialogListener {
+        CreateSetEffectDialogFragment.SetEffectDialogListener,
+        CreateForLoopFitmediaDialogFragment.ForLoopFitMediaDialogListener,
+        CreateForLoopMakeBeatDialogFragment.ForLoopMakeBeatDialogListener,
+        CreateForLoopChoiceDialogFragment.ForLoopChoiceDialogListener {
 
     public static String TAG = "section-editor";
-    private static int selectedRadioButtonIndex = RadioButtonIndices.UNASSIGNED;
-    // TODO change this to use callbacks from the DialogFragment
     private Section currentSection;
     private Group selectedToAddGroup;
     private ListView mListView;
@@ -134,43 +132,58 @@ public class SectionEditorActivity extends FragmentActivity
                 } else {
                     ESAudio.play(currentSection, context);
                 }
-
             }
         });
-        // TODO(hendon): replace these to include for loops - Container Class?
+
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO: trigger editing instead of just playing here.
                 // TODO: replace this.. ASAP
-                if (position < fitMedias.size()) {
-                    int fitMediaIndex = position;
+                List<ForLoop> currentForLoops = currentSection.getForLoops();
+                List<ESMakeBeat> currentMakeBeats = currentSection.getMakeBeats();
+                List<ESFitMedia> currentFitMedias = currentSection.getFitMedias();
+                if (position < currentForLoops.size()) {
+                    int forLoopIndex = position;
+                    selectedToAddGroup = currentForLoops.get(forLoopIndex);
+                    promptForLoopChoiceDialog();
+                } else if (position < currentFitMedias.size() + forLoops.size()) {
+                    int fitMediaIndex = position - currentFitMedias.size();
                     // Clicked item is a fitMedia
-                    ESFitMedia selectedFitMedia = currentSection.getFitMedias().get(fitMediaIndex);
-                    ESAudio.play(selectedFitMedia, context, songBPM, songPhraseLength);
+                    ESFitMedia selectedFitMedia = currentFitMedias.get(fitMediaIndex);
+                    if (selectedFitMedia.hasVariable()) {
+                        // Matches forLoop to fitMedia by variable.
+                        for (ForLoop forLoop : currentForLoops) {
+                            if (forLoop.getVariable().equals(selectedFitMedia.getStartVariable())) {
+                                Log.i(TAG, "Found forLoop with variable:" + forLoop.getVariable());
+                                ESAudio.playForLoopFitMedia(selectedFitMedia, forLoop, context,
+                                        currentSection.getTempoBPM(),
+                                        currentSection.getPhraseLengthMeasures());
+                            }
+                        }
+                        Log.i(TAG, "Completed search for fitMedia forLoop");
+                    } else {
+                        ESAudio.play(selectedFitMedia, context, songBPM, songPhraseLength);
+                    }
                     Log.i(TAG, "Playing fitMedia at position: " + position);
                     selectedToAddGroup = null;
-                } else if (position < fitMedias.size() + forLoops.size()) {
-                    int forLoopIndex = position - fitMedias.size();
-                    promptAddChoiceToGroupDialog();
-                    selectedToAddGroup = forLoops.get(forLoopIndex);
-                    if (selectedRadioButtonIndex == RadioButtonIndices.FITMEDIA) {
-                        promptFitMediaDialogAndWrite();
-                    } else if (selectedRadioButtonIndex == RadioButtonIndices.MAKEBEAT) {
-                        promptMakeBeatDialogAndWrite();
-                    } else if (selectedRadioButtonIndex == RadioButtonIndices.FORLOOP) {
-                        promptForLoopDialogAndWrite();
-                    } else if (selectedRadioButtonIndex != RadioButtonIndices.UNASSIGNED) {
-                        Toast.makeText(context,
-                                "Unimplemented choice selected: " + selectedRadioButtonIndex,
-                                Toast.LENGTH_LONG).show();
+                } else if (position < currentFitMedias.size() + currentForLoops.size()
+                        + currentMakeBeats.size()) {
+                    int makeBeatIndex = position - currentFitMedias.size() - currentForLoops.size();
+                    ESMakeBeat selectedMakeBeat = currentSection.getMakeBeats().get(makeBeatIndex);
+                    if (selectedMakeBeat.hasVariable()) {
+                        for (ForLoop forLoop : currentForLoops) {
+                            if (forLoop.getVariable().equals(selectedMakeBeat.getStartVariable())) {
+                                ESAudio.playForLoopMakeBeat(selectedMakeBeat, forLoop, context,
+                                        currentSection.getTempoBPM(),
+                                        currentSection.getPhraseLengthMeasures());
+                            }
+                        }
+                        Log.i(TAG, "Completed search for fitMedia forLoop");
+                    } else {
+                        ESAudio.play(selectedMakeBeat, context, currentSection.getTempoBPM(),
+                                currentSection.getPhraseLengthMeasures());
                     }
-
-                } else if (position < fitMedias.size() + forLoops.size() + makeBeats.size()) {
-                    int makeBeatIndex = position - fitMedias.size() - forLoops.size();
-                    ESMakeBeat makeBeat = currentSection.getMakeBeats().get(makeBeatIndex);
-                    ESAudio.play(makeBeat, context, currentSection.getTempoBPM(),
-                            currentSection.getPhraseLengthMeasures());
                     selectedToAddGroup = null;
                 }
             }
@@ -178,21 +191,26 @@ public class SectionEditorActivity extends FragmentActivity
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position < fitMedias.size()) {
+                List<ForLoop> currentForLoops = currentSection.getForLoops();
+                List<ESMakeBeat> currentMakeBeats = currentSection.getMakeBeats();
+                List<ESFitMedia> currentFitMedias = currentSection.getFitMedias();
+                if (position < currentFitMedias.size()) {
                     int fitMediaIndex = position;
                     // Clicked item is a fitMedia
-                    ESFitMedia removed = currentSection.getFitMedias().remove(fitMediaIndex);
+                    ESFitMedia removed = currentFitMedias.remove(fitMediaIndex);
                     Toast.makeText(context, "Removed FitMedia: " + removed.toString(),
                             Toast.LENGTH_SHORT).show();
                     Log.i(TAG, "Removed Section Item:" + removed.toString());
-                } else if (position < fitMedias.size() + forLoops.size()) {
-                    int forLoopIndex = position - fitMedias.size();
-                    ForLoop forLoop = forLoops.get(forLoopIndex);
-                    ESAudio.executeForLoop(forLoop, currentSection, context);
+                } else if (position < currentFitMedias.size() + currentForLoops.size()) {
+                    int forLoopIndex = position - currentFitMedias.size();
+                    ForLoop forLoop = currentForLoops.get(forLoopIndex);
+                    // TODO: Play forLoop here.
+                    //ESAudio.executeForLoop(forLoop, currentSection, context);
                     Toast.makeText(context, "Executing for loop: " + forLoop.toString(),
                             Toast.LENGTH_SHORT).show();
-                } else if (position < fitMedias.size() + forLoops.size() + makeBeats.size()) {
-                    int makeBeatIndex = position - fitMedias.size() - forLoops.size();
+                } else if (position < currentFitMedias.size() + currentForLoops.size()
+                        + currentMakeBeats.size()) {
+                    int makeBeatIndex = position - currentFitMedias.size() - currentForLoops.size();
                     ESMakeBeat removed = currentSection.getMakeBeats().remove(makeBeatIndex);
                     Toast.makeText(context, "Removed FitMedia: " + removed.toString(),
                             Toast.LENGTH_SHORT).show();
@@ -244,6 +262,8 @@ public class SectionEditorActivity extends FragmentActivity
         } else if (id == R.id.action_clear_all) {
             currentSection.clearAll();
             Log.i(TAG, "Cleared all items in current section");
+        } else if (id == R.id.action_stop_all_players) {
+            ESAudio.killAllMediaPlayers();
         }
         // TODO: Remove this after testing
         else if (id == R.id.action_test_seteffect) {
@@ -255,9 +275,7 @@ public class SectionEditorActivity extends FragmentActivity
             CountDownTimer timer = new CountDownTimer(4000, 1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
-
                 }
-
                 @Override
                 public void onFinish() {
                     ESAudio.play(fitMedia, context, 120, 8);
@@ -269,9 +287,9 @@ public class SectionEditorActivity extends FragmentActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void promptAddChoiceToGroupDialog() {
-        DialogFragment newFragment = new AddChoiceToGroupDialogFragment();
-        newFragment.show(getFragmentManager(), "addChoiceToGroup");
+    private void promptForLoopChoiceDialog() {
+        DialogFragment newFragment = new CreateForLoopChoiceDialogFragment();
+        newFragment.show(getFragmentManager(), "createForLoopChoice");
     }
 
     private void promptFitMediaDialogAndWrite() {
@@ -298,11 +316,21 @@ public class SectionEditorActivity extends FragmentActivity
         newFragment.show(getFragmentManager(), "createSetEffect");
     }
 
+    private void promptForLoopFitMediaDialogAndWrite() {
+        DialogFragment newFragment = new CreateForLoopFitmediaDialogFragment();
+        newFragment.show(getFragmentManager(), "createForLoopFitMedia");
+    }
+
+    private void promptForLoopMakeBeatDialogAndWrite() {
+        DialogFragment newFragment = new CreateForLoopMakeBeatDialogFragment();
+        newFragment.show(getFragmentManager(), "createForLoopMakeBeat");
+    }
+
     // TODO: Replace with ArrayAdapter.add(...) version because this is slow.
     public void refreshListUI() {
         //mListView = (ListView) findViewById(R.id.listViewSectionItems_dumbUI);
-        List<ESFitMedia> fitMedias = currentSection.getFitMedias();
         List<ForLoop> forLoops = currentSection.getForLoops();
+        List<ESFitMedia> fitMedias = currentSection.getFitMedias();
         List<ESMakeBeat> makeBeats = currentSection.getMakeBeats();
         if (fitMedias.isEmpty() && forLoops.isEmpty() && makeBeats.isEmpty()) {
             Log.i(TAG, "fitMedias, forLoops, and makeBeats empty in refreshListUI()");
@@ -348,40 +376,55 @@ public class SectionEditorActivity extends FragmentActivity
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, ESFitMedia value) {
-        value.setSectionNumber(sectionNumber);
-        // TODO(hendon)
-        currentSection.add(value, Util.DROP_LOCATION);
-        currentSection.addObject(value);
-        //mSectionItemsAdapter.add(value.toString());
-        //mSectionItemsAdapter.notifyDataSetChanged();
-        if (selectedToAddGroup != null) {
-            Log.i(TAG, "Added new FitMedia: " + value.toString() + " to "
-                    + selectedToAddGroup.toString());
-            updateGroups(value);
+        if (!value.hasVariable() ||
+                (value.hasVariable() && currentSection.getVariables().containsKey(value.getStartVariable()))
+                        && currentSection.getVariables().containsKey(value.getEndVariable())) {
+            value.setSectionNumber(sectionNumber);
+            // TODO(hendon)
+            currentSection.add(value, Util.DROP_LOCATION);
+            currentSection.addObject(value);
+            //mSectionItemsAdapter.add(value.toString());
+            //mSectionItemsAdapter.notifyDataSetChanged();
+            if (selectedToAddGroup != null) {
+                Log.i(TAG, "Added new FitMedia: " + value.toString() + " to "
+                        + selectedToAddGroup.toString());
+                updateGroups(value);
+            } else {
+                Log.i(TAG, "Added new FitMedia: " + value.toString());
+            }
+            refreshListUI();
         } else {
-            Log.i(TAG, "Added new FitMedia: " + value.toString());
+            String unknownVariable = "";
+            if (!currentSection.getVariables().containsKey(value.getStartVariable())) {
+                unknownVariable += value.getStartVariable();
+            }
+            if (!currentSection.getVariables().containsKey(value.getEndVariable())) {
+                unknownVariable += " " + value.getEndVariable();
+            }
+            Toast.makeText(context, "Unrecognized variable(s)" + unknownVariable +
+                    " check your spelling!", Toast.LENGTH_SHORT).show();
+            promptForLoopFitMediaDialogAndWrite();
         }
-        refreshListUI();
     }
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, ForLoop value) {
         value.setSectionNumber(sectionNumber);
-        if (selectedToAddGroup != null) {
-            Log.i(TAG, "Added new ForLoop: " + value.toString() + " to "
-                    + selectedToAddGroup.toString());
-            updateGroups(value);
+        if (!currentSection.addVariable(value.getVariable(), value.getIterValues())) {
+            Toast.makeText(context, "Variable name:" + value.getVariable() + " already taken." +
+                    " Please try again with a new name!", Toast.LENGTH_SHORT).show();
         } else {
-            Log.i(TAG, "Added new ForLoop: " + value.toString());
-            currentSection.add(value, Util.DROP_LOCATION);
-            currentSection.addObject(value);
+            if (selectedToAddGroup != null) {
+                Log.i(TAG, "Added new ForLoop: " + value.toString() + " to "
+                        + selectedToAddGroup.toString());
+                updateGroups(value);
+            } else {
+                Log.i(TAG, "Added new ForLoop: " + value.toString());
+                currentSection.add(value, Util.DROP_LOCATION);
+                currentSection.addObject(value);
+            }
+            refreshListUI();
         }
-        // TODO add variable to song & update drawer
-        String variableName = value.getVariable();
-        //if (!currentSection.getParentSong().addVariable(variableName, value.getAmount() + "")) {
-        //    Log.e(TAG, "Unable to set variable:" + variableName + " to " + value.getAmount());
-        // }
-        refreshListUI();
     }
 
     @Override
@@ -403,18 +446,41 @@ public class SectionEditorActivity extends FragmentActivity
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog, ESMakeBeat value) {
-        value.setSectionNumber(sectionNumber);
-        currentSection.add(value, Util.DROP_LOCATION);
-        currentSection.addObject(value);
-        if (selectedToAddGroup != null) {
-            Log.i(TAG, "Added new MakeBeat: " + value.toString() + " to "
-                    + selectedToAddGroup.toString());
-            updateGroups(value);
-        } else {
-            Log.i(TAG, "Added new MakeBeat: " + value.toString());
+    public void onDialogPositiveClick(DialogFragment dialog, int choiceID) {
+        if (choiceID == RadioButtonIndices.FITMEDIA) {
+            promptForLoopFitMediaDialogAndWrite();
+        } else if (choiceID == RadioButtonIndices.MAKEBEAT) {
+            promptForLoopMakeBeatDialogAndWrite();
+        } else if (choiceID == RadioButtonIndices.FORLOOP) {
+            // TODO: Deal with Nesting
+            promptForLoopDialogAndWrite();
+        } else if (choiceID != RadioButtonIndices.UNASSIGNED) {
+            Toast.makeText(context,
+                    "Unimplemented choice selected: " + choiceID,
+                    Toast.LENGTH_LONG).show();
         }
-        refreshListUI();
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, ESMakeBeat value) {
+        if (!value.hasVariable() ||
+                (value.hasVariable() && currentSection.getVariables().containsKey(value.getStartVariable()))) {
+            value.setSectionNumber(sectionNumber);
+            currentSection.add(value, Util.DROP_LOCATION);
+            currentSection.addObject(value);
+            if (selectedToAddGroup != null) {
+                Log.i(TAG, "Added new MakeBeat: " + value.toString() + " to "
+                        + selectedToAddGroup.toString());
+                updateGroups(value);
+            } else {
+                Log.i(TAG, "Added new MakeBeat: " + value.toString());
+            }
+            refreshListUI();
+        } else {
+            Toast.makeText(context, "Unrecognized variable, check your spelling!",
+                    Toast.LENGTH_SHORT).show();
+            promptForLoopMakeBeatDialogAndWrite();
+        }
     }
 
     public void updateGroups(GroupObject value) {
@@ -457,57 +523,11 @@ public class SectionEditorActivity extends FragmentActivity
         }
     }
 
-    private interface RadioButtonIndices {
+    public interface RadioButtonIndices {
         final int UNASSIGNED = -1;
         final int FITMEDIA = 0;
         final int MAKEBEAT = 1;
         final int FORLOOP = 2;
     }
 
-    public static class AddChoiceToGroupDialogFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            final RadioButton[] choices = new RadioButton[3];
-            RadioGroup choiceFake = new RadioGroup(getActivity().getApplicationContext());
-            choiceFake.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
-            // Adds a fitMedia choice to the RadioGroup
-            RadioButton fitMediaChoice = new RadioButton(getActivity().getApplicationContext());
-            choiceFake.addView(fitMediaChoice);
-            fitMediaChoice.setTextColor(Color.BLACK);
-            fitMediaChoice.setText("fitMedia");
-            // Adds a makeBeat choice to the RadioGroup
-            RadioButton makeBeatChoice = new RadioButton(getActivity().getApplicationContext());
-            choiceFake.addView(makeBeatChoice);
-            makeBeatChoice.setTextColor(Color.BLACK);
-            makeBeatChoice.setText("makeBeat");
-            // Adds a forLoop choice to the RadioGroup
-            RadioButton forLoopChoice = new RadioButton(getActivity().getApplicationContext());
-            choiceFake.addView(forLoopChoice);
-            forLoopChoice.setTextColor(Color.BLACK);
-            forLoopChoice.setText("for loop");
-            // Adds a ifStatement choice to the RadioGroup
-            //RadioButton ifStatementChoice = new RadioButton(getActivity().getApplicationContext());
-            //choiceFake.addView(ifStatementChoice);
-            //ifStatementChoice.setTextColor(Color.BLACK);
-            //ifStatementChoice.setText("if statement");
-            final RadioGroup input = choiceFake;
-            builder.setMessage("What would you like to add?")
-                    .setPositiveButton("Okay!", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            selectedRadioButtonIndex = input.getCheckedRadioButtonId();
-                        }
-                    })
-                    .setNegativeButton("Maybe later.", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            selectedRadioButtonIndex = -1;
-                            // User cancelled the dialog
-                        }
-                    })
-                    .setView(input);
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
 }

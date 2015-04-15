@@ -27,8 +27,9 @@ public class ESAudio extends Thread {
     public static final String TAG = "esaudio";
     // This is in response to the imperfect scheduler timing.
     // TODO: replace this with noisy tick readings
-    private static final int TICK_MS = 10;
+    private static final int TICK_MS = 20;
     private static final double BEAT_LENGTH = 1 / 16.0;
+    private static List<CountDownTimer> playTimers = new ArrayList<CountDownTimer>();
 
     /**
      * @param fitMedia
@@ -56,7 +57,6 @@ public class ESAudio extends Thread {
             Log.i(TAG, "play - sampleID is invalid, name=" + fitMedia.getSampleName());
             return false;
         }
-
 
         //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
@@ -88,6 +88,7 @@ public class ESAudio extends Thread {
                         mediaPlayer.seekTo(startTimeMilliseconds);
                         Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
                     }
+                    Log.i(TAG, "Starting MediaPlayer at:" + System.currentTimeMillis());
                     mediaPlayer.start();
                     Log.i(TAG, "MediaPlayer starting at " +
                             (endTimeMilliseconds - millisUntilFinished) + "ms");
@@ -101,7 +102,79 @@ public class ESAudio extends Thread {
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
             }
         }.start();
+        playTimers.add(playTimer);
         return true;
+    }
+
+    public static CountDownTimer getReadyMediaPlayerForPlay(ESFitMedia fitMedia, Context context, int tempoBPM,
+                                                            int phraseLength) {
+        if (fitMedia == null) {
+            Log.i(TAG, "play - fitMedia is null");
+            fitMedia = new ESFitMedia(Util.DEFAULT_SAMPLES[1], 0, 0.5, 1);
+            //TODO: make this less jank
+            //return false;
+        }
+        if (context == null) {
+            Log.i(TAG, "play - context is null");
+            return null;
+        }
+        if (!fitMedia.isValid()) {
+            Log.i(TAG, "play - fitMedia is invalid, fitmedia=" + fitMedia.toString());
+            return null;
+        }
+
+        int sampleId = Util.getSampleIDFromName(fitMedia.getSampleName());
+        if (sampleId == -1) {
+            Log.i(TAG, "play - sampleID is invalid, name=" + fitMedia.getSampleName());
+            return null;
+        }
+
+        //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
+
+        // Schedule when it needs to be played
+        final int startTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getStartLocation(),
+                tempoBPM, phraseLength);
+        final int endTimeMilliseconds = Util.getLocationTimeMS(fitMedia.getEndLocation(),
+                tempoBPM, phraseLength);
+        final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+        // TODO: Add in for loops / conditionals affecting the playing of the song.
+        // Play it
+
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            Log.i(TAG, "MediaPlayer is playing, stopping it");
+        }
+            /*
+             Ignore the error message: Should have subtitle controller already set
+             it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
+             */
+        CountDownTimer playTimer = new CountDownTimer(endTimeMilliseconds,
+                TICK_MS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (!mediaPlayer.isPlaying() && millisUntilFinished <= durationMilliseconds) {
+                    if (startTimeMilliseconds > 0) {
+                        mediaPlayer.seekTo(startTimeMilliseconds);
+                        Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
+                    }
+                    Log.i(TAG, "Starting MediaPlayer at:" + System.currentTimeMillis());
+                    mediaPlayer.start();
+                    Log.i(TAG, "MediaPlayer starting at " +
+                            (endTimeMilliseconds - millisUntilFinished) + "ms");
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
+            }
+        };
+
+        return playTimer;
     }
 
     public static boolean play(Section section, Context context) {
@@ -109,25 +182,32 @@ public class ESAudio extends Thread {
             Log.i(TAG, "Attempted to play invalid section, name:" + section.getName());
             return false;
         }
-
+        List<ESFitMedia> allFitMedias = new ArrayList<ESFitMedia>();
+        List<ESMakeBeat> allMakeBeats = new ArrayList<ESMakeBeat>();
         for (GroupObject object : section.getOrderedObjects()) {
-            if (object.getClass() == ForLoop.class) {
+            if (object.getClass() == ESMakeBeat.class) {
+                ESMakeBeat makeBeat = (ESMakeBeat) object;
+                //play(makeBeat, context, section.getTempoBPM(),section.getPhraseLengthMeasures());
+                allMakeBeats.add(makeBeat);
+            } else if (object.getClass() == ESFitMedia.class) {
+                ESFitMedia fitMedia = (ESFitMedia) object;
+                //play(fitMedia, context, section.getTempoBPM(), section.getPhraseLengthMeasures());
+                allFitMedias.add(fitMedia);
+            } else if (object.getClass() == ESSetEffect.class) {
+                // TODO: Implement this.
+            } else if (object.getClass() == ForLoop.class) {
                 ForLoop forLoop = (ForLoop) object;
-                ESSetEffect current;
                 for (GroupObject contained : forLoop.getOrderedObjects()) {
                     if (contained.getClass() == ESFitMedia.class) {
                         ESFitMedia fitMedia = (ESFitMedia) contained;
-                        List<Pair<Double, Double>> playTimes =
-                                singleFitMediaPlayFromForLoop(forLoop);
-                        playThenPauseThenSeekAllPairs(playTimes, context, fitMedia,
-                                section.getTempoBPM(), section.getPhraseLengthMeasures());
+                        List<ESFitMedia> fitMedias = getFitMediaListFromForLoop(fitMedia, forLoop);
+                        allFitMedias.addAll(fitMedias);
                     } else if (contained.getClass() == ESMakeBeat.class) {
                         ESMakeBeat makeBeat = (ESMakeBeat) contained;
-                        play(makeBeat, context, section.getTempoBPM(),
-                                section.getPhraseLengthMeasures());
-                        // TODO Account for the for loop variable values
+                        List<ESMakeBeat> makeBeats = getMakeBeatListFromForLoop(makeBeat, forLoop);
+                        allMakeBeats.addAll(makeBeats);
                     } else if (contained.getClass() == ESSetEffect.class) {
-                        current = (ESSetEffect) contained;
+                        // TODO: check for this
                     } else if (contained.getClass() == ForLoop.class) {
                         Log.i(TAG, "Loop again!");
                     } else if (contained.getClass() == IfStatement.class) {
@@ -136,14 +216,67 @@ public class ESAudio extends Thread {
                 }
             }
         }
-        // TODO: Add in logic for ifStatements, forLoops, makeBeats and setEffects
-        for (ESFitMedia fitMedia : section.getFitMedias()) {
-            //localPlay(fitMedia, songBPM, songPhraseLength);
-            ESAudio.play(fitMedia, context, section.getTempoBPM(),
-                    section.getPhraseLengthMeasures());
+
+        List<CountDownTimer> timers = new ArrayList<CountDownTimer>();
+        // TODO: Add setEffect
+        for (ESFitMedia fitMedia : allFitMedias) {
+            timers.add(getReadyMediaPlayerForPlay(fitMedia, context, section.getTempoBPM(),
+                    section.getPhraseLengthMeasures()));
+        }
+        for (ESMakeBeat makeBeat : allMakeBeats) {
+            timers.add(getReadyMediaPlayerForPlay(makeBeat, context,
+                    section.getTempoBPM(), section.getPhraseLengthMeasures()));
         }
 
+        for (CountDownTimer timer : timers) {
+            Log.i(TAG, "Queuing timer at:" + System.currentTimeMillis());
+            timer.start();
+        }
         return true;
+    }
+
+    // Assumes no nested forLoops
+    public static void play(ForLoop forLoop, Context context, int tempoBPM, int phraseLength) {
+        if (forLoop.getOrderedObjects().isEmpty() || forLoop.getIterValues().isEmpty()) {
+            return;
+        }
+
+        List<ESFitMedia> allFitMedias = new ArrayList<ESFitMedia>();
+        List<ESMakeBeat> allMakeBeats = new ArrayList<ESMakeBeat>();
+
+        for (GroupObject contained : forLoop.getOrderedObjects()) {
+            if (contained.getClass() == ESFitMedia.class) {
+                ESFitMedia fitMedia = (ESFitMedia) contained;
+                List<ESFitMedia> fitMedias = getFitMediaListFromForLoop(fitMedia, forLoop);
+                allFitMedias.addAll(fitMedias);
+            } else if (contained.getClass() == ESMakeBeat.class) {
+                ESMakeBeat makeBeat = (ESMakeBeat) contained;
+                List<ESMakeBeat> makeBeats = getMakeBeatListFromForLoop(makeBeat, forLoop);
+                allMakeBeats.addAll(makeBeats);
+            } else if (contained.getClass() == ESSetEffect.class) {
+                // TODO: check for this
+            } else if (contained.getClass() == ForLoop.class) {
+                Log.i(TAG, "Loop again!");
+            } else if (contained.getClass() == IfStatement.class) {
+                Log.i(TAG, "Need to implement if statement logic here");
+            }
+        }
+
+        List<CountDownTimer> timers = new ArrayList<CountDownTimer>();
+        // TODO: Add setEffect
+        for (ESFitMedia fitMedia : allFitMedias) {
+            timers.add(getReadyMediaPlayerForPlay(fitMedia, context, tempoBPM,
+                    phraseLength));
+        }
+        for (ESMakeBeat makeBeat : allMakeBeats) {
+            timers.add(getReadyMediaPlayerForPlay(makeBeat, context,
+                    tempoBPM, phraseLength));
+        }
+
+        for (CountDownTimer timer : timers) {
+            Log.i(TAG, "Queuing timer at:" + System.currentTimeMillis());
+            timer.start();
+        }
     }
 
     /**
@@ -154,7 +287,7 @@ public class ESAudio extends Thread {
      */
     public static List<Pair<Double, Double>> singleFitMediaPlayFromForLoop(ForLoop forLoop) {
         char operand = forLoop.getOperand();
-        double amount = forLoop.getAmount();
+        double amount = forLoop.getStepSize();
         // for var in range() --> fitMedia(var, var (operand) amount)
         if (operand != '*' && operand != '/' && operand != '+' && operand != '%') {
             Log.i(TAG, "Invalid Operand: " + operand);
@@ -280,7 +413,7 @@ public class ESAudio extends Thread {
             short reflectionsLevel = 100;
             short reverbDelay = 0;
 
-            EnvironmentalReverb reverb = new EnvironmentalReverb(0, mediaPlayer.getAudioSessionId());
+            /*EnvironmentalReverb reverb = new EnvironmentalReverb(0, mediaPlayer.getAudioSessionId());
             reverb.setDecayTime(decayTime);
             reverb.setDensity(density);
             reverb.setDiffusion(diffusion);
@@ -289,10 +422,11 @@ public class ESAudio extends Thread {
             reverb.setReflectionsDelay(reflectionsDelay);
             reverb.setReflectionsLevel(reflectionsLevel);
             reverb.setReverbDelay(reverbDelay);
-            reverb.setEnabled(true);
+            reverb.setEnabled(true);*/
             //EnvironmentalReverb overdrive = createOverdriveEffect();
             //mediaPlayer.attachAuxEffect(reverb.getId());
-            mediaPlayer.setAuxEffectSendLevel(1.0f);
+            //mediaPlayer.setAuxEffectSendLevel(1.0f);
+            mediaPlayer.attachAuxEffect(EnvironmentalReverb.PARAM_DECAY_TIME);
         }
 
         // TODO: Handle effects in a robust way instead of encoding them
@@ -323,6 +457,7 @@ public class ESAudio extends Thread {
                         mediaPlayer.seekTo(startTimeMilliseconds);
                         Log.i(TAG, "MediaPlayer seeking to " + startTimeMilliseconds + "ms");
                     }
+                    Log.i(TAG, "Starting MediaPlayer at:" + System.currentTimeMillis());
                     mediaPlayer.start();
                     Log.i(TAG, "MediaPlayer starting at " +
                             (endTimeMilliseconds - millisUntilFinished) + "ms");
@@ -336,7 +471,106 @@ public class ESAudio extends Thread {
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
             }
         }.start();
+        playTimers.add(playTimer);
         return true;
+    }
+
+    public static CountDownTimer getReadyMediaPlayerForPlay(ESMakeBeat makeBeat, Context context, int tempoBPM,
+                                                            int phraseLength) {
+        if (makeBeat == null) {
+            Log.i(TAG, "play - makeBeat is null");
+            makeBeat = new ESMakeBeat("", 0, 0, Util.DEFAULT_BEATS[0]);
+            //makeBeat = new ESMakeBeat(Util.DEFAULT_SAMPLES[1], 0, 0.5, 1);
+            //TODO: make this less jank
+            //return false;
+        }
+        if (context == null) {
+            Log.i(TAG, "play - context is null");
+            return null;
+        }
+        if (!makeBeat.isValid()) {
+            Log.i(TAG, "play - makeBeat is invalid, makeBeat=" + makeBeat.toString());
+            return null;
+        }
+
+        int sampleId = Util.getSampleIDFromName(makeBeat.getSampleName());
+        if (sampleId == -1) {
+            Log.i(TAG, "play - sampleID is invalid, name=" + makeBeat.getSampleName());
+            return null;
+        }
+        //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
+        //Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());
+
+        // Schedule when it needs to be played
+        final int startTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation(),
+                tempoBPM, phraseLength);
+        // TODO: Add in the end time
+        final int endTimeMilliseconds = Util.getLocationTimeMS(makeBeat.getStartLocation() +
+                makeBeat.getBeatPattern().length() * BEAT_LENGTH, tempoBPM, phraseLength);
+        final int durationMilliseconds = endTimeMilliseconds - startTimeMilliseconds;
+
+        final List<List<Integer>> playTimeMS = calcPlayTimesMSFromMakeBeat(makeBeat, tempoBPM,
+                phraseLength);
+
+        // TODO: Add in for loops / conditionals affecting the playing of the song.
+        // Play it
+
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            Log.i(TAG, "MediaPlayer is playing, stopping it");
+        }
+            /*
+             Ignore the error message: Should have subtitle controller already set
+             it's an artifact of MediaPlayer's programming: http://goo.gl/Gmb1l4 for more info
+             */
+        CountDownTimer playTimer = new CountDownTimer(endTimeMilliseconds,
+                TICK_MS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long currentTimeMS = endTimeMilliseconds - millisUntilFinished;
+                //Pair<Integer, Integer> currentPairIndex;
+                // This assumes a well constructed playTimeMS list.
+                for (int i = 0; i < playTimeMS.size(); i++) {
+                    // This assumes that the latency of this search isn't enough to ruin the timing.
+                    if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) + TICK_MS &&
+                            currentTimeMS > playTimeMS.get(i).get(MakeBeatIndices.PLAY_START) - TICK_MS) {
+                        //currentPairIndex = new Pair<Integer, Integer>(i, MakeBeatIndices.PLAY_START);
+                        if (millisUntilFinished <= durationMilliseconds) {
+                            mediaPlayer.pause();
+                            if (startTimeMilliseconds > 0) {
+                                mediaPlayer.seekTo(0);
+                            }
+                            mediaPlayer.start();
+                            Log.i(TAG, "MediaPlayer starting at " + currentTimeMS + "ms");
+                        }
+                        break;
+                    } else if (currentTimeMS < playTimeMS.get(i).get(MakeBeatIndices.REST_START)
+                            + TICK_MS && currentTimeMS
+                            > playTimeMS.get(i).get(MakeBeatIndices.REST_START) - TICK_MS) {
+                        //currentPairIndex = new Pair<Integer, Integer>(i, MakeBeatIndices.REST_START);
+                        if (millisUntilFinished <= durationMilliseconds) {
+                            if (startTimeMilliseconds > 0) {
+                                mediaPlayer.seekTo(0);
+                            }
+                            mediaPlayer.start();
+                            Log.i(TAG, "MediaPlayer starting at " +
+                                    (endTimeMilliseconds - millisUntilFinished) + "ms");
+                        }
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
+            }
+        };
+
+        return playTimer;
     }
 
     public static boolean play(ESMakeBeat makeBeat, Context context, int tempoBPM,
@@ -417,6 +651,7 @@ public class ESAudio extends Thread {
                             if (startTimeMilliseconds > 0) {
                                 mediaPlayer.seekTo(0);
                             }
+                            Log.i(TAG, "Starting MediaPlayer at:" + System.currentTimeMillis());
                             mediaPlayer.start();
                             Log.i(TAG, "MediaPlayer starting at " +
                                     (endTimeMilliseconds - millisUntilFinished) + "ms");
@@ -433,6 +668,7 @@ public class ESAudio extends Thread {
                 Log.i(TAG, "MediaPlayer finished after " + durationMilliseconds + "ms");
             }
         }.start();
+        playTimers.add(playTimer);
         return true;
     }
 
@@ -546,6 +782,158 @@ public class ESAudio extends Thread {
             }
         }
         return mediaPlayer;
+    }
+
+    public static void playForLoopFitMedia(ESFitMedia contained, ForLoop container, Context context,
+                                           int tempoBPM, int phraseLength) {
+        List<ESFitMedia> fitMediasToPlay =
+                ESAudio.getFitMediaListFromForLoop(contained, container);
+        List<CountDownTimer> fitMediaTimers = new ArrayList<CountDownTimer>();
+        for (ESFitMedia fitMedia : fitMediasToPlay) {
+            fitMediaTimers.add(ESAudio.getReadyMediaPlayerForPlay(fitMedia,
+                    context, tempoBPM, phraseLength));
+            //Log.i(TAG, "Attempting to play fitMedia:" + fitMedia.toString());
+            //ESAudio.play(fitMedia, context, tempoBPM, phraseLength);
+        }
+        for (CountDownTimer timer : fitMediaTimers) {
+            Log.i(TAG, "Starting forLoopFitMedia timer");
+            timer.start();
+        }
+    }
+
+    public static void playForLoopMakeBeat(ESMakeBeat contained, ForLoop container, Context context,
+                                           int tempoBPM, int phraseLength) {
+        List<ESMakeBeat> makeBeatsToPlay =
+                ESAudio.getMakeBeatListFromForLoop(contained, container);
+        List<CountDownTimer> makeBeatTimers = new ArrayList<CountDownTimer>();
+        for (ESMakeBeat makeBeat : makeBeatsToPlay) {
+            makeBeatTimers.add(ESAudio.getReadyMediaPlayerForPlay(makeBeat, context, tempoBPM,
+                    phraseLength));
+        }
+        for (CountDownTimer timer : makeBeatTimers) {
+            Log.i(TAG, "Starting forLoopMakeBeat timer");
+            timer.start();
+        }
+    }
+
+    private static List<ESFitMedia> getFitMediaListFromForLoop(ESFitMedia fitMedia, ForLoop forLoop) {
+        List<ESFitMedia> fitMedias = new ArrayList<ESFitMedia>();
+        String variable = forLoop.getVariable();
+        List<Double> startLocations = new ArrayList<Double>();
+        List<Double> endLocations = new ArrayList<Double>();
+        double startAmount = fitMedia.getStartAmount();
+        double endAmount = fitMedia.getEndAmount();
+        Log.i(TAG, "Got here.. fitMediaList");
+        // TODO: Handle case where two for loops are used.
+        if (fitMedia.getStartVariable().equals(variable)
+                && fitMedia.getEndVariable().equals(variable)) {
+            Log.i(TAG, "ForLoop values" + forLoop.getIterValues().toString());
+            // Start values.
+            if (fitMedia.getStartOperand() == '+') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value + startAmount);
+                }
+            } else if (fitMedia.getStartOperand() == '-') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value - startAmount);
+                }
+            } else if (fitMedia.getStartOperand() == '*') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value * startAmount);
+                }
+            } else if (fitMedia.getStartOperand() == '/') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value / startAmount);
+                }
+            } else if (fitMedia.getStartOperand() == '%') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value % startAmount);
+                }
+            } else {
+                startLocations = forLoop.getIterValues();
+            }
+
+            // End values.
+            if (fitMedia.getEndOperand() == '+') {
+                for (Double value : forLoop.getIterValues()) {
+                    endLocations.add(value + endAmount);
+                }
+            } else if (fitMedia.getEndOperand() == '-') {
+                for (Double value : forLoop.getIterValues()) {
+                    endLocations.add(value - endAmount);
+                }
+            } else if (fitMedia.getEndOperand() == '*') {
+                for (Double value : forLoop.getIterValues()) {
+                    endLocations.add(value * endAmount);
+                }
+            } else if (fitMedia.getEndOperand() == '/') {
+                for (Double value : forLoop.getIterValues()) {
+                    endLocations.add(value / endAmount);
+                }
+            } else if (fitMedia.getEndOperand() == '%') {
+                for (Double value : forLoop.getIterValues()) {
+                    endLocations.add(value % endAmount);
+                }
+            } else {
+                endLocations = forLoop.getIterValues();
+            }
+        }
+
+        Log.i(TAG, "FitMedia startLocations size=" + startLocations.size());
+        // Create fitMedias
+        for (int i = 0; i < startLocations.size(); i++) {
+            fitMedias.add(new ESFitMedia(fitMedia.getSampleName(), fitMedia.getSectionNumber(),
+                    startLocations.get(i), endLocations.get(i)));
+        }
+
+        // TODO: isValid checks
+        return fitMedias;
+    }
+
+    private static List<ESMakeBeat> getMakeBeatListFromForLoop(ESMakeBeat makeBeat, ForLoop forLoop) {
+        List<ESMakeBeat> makeBeats = new ArrayList<ESMakeBeat>();
+        String variable = forLoop.getVariable();
+        List<Double> startLocations = new ArrayList<Double>();
+        Double startAmount = makeBeat.getStartAmount();
+        if (makeBeat.getStartVariable().equals(variable)) {
+            if (makeBeat.getStartOperand() == '+') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value + startAmount);
+                }
+            } else if (makeBeat.getStartOperand() == '-') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value - startAmount);
+                }
+            } else if (makeBeat.getStartOperand() == '*') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value * startAmount);
+                }
+            } else if (makeBeat.getStartOperand() == '/') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value / startAmount);
+                }
+            } else if (makeBeat.getStartOperand() == '%') {
+                for (Double value : forLoop.getIterValues()) {
+                    startLocations.add(value % startAmount);
+                }
+            } else if (makeBeat.getStartOperand() == 'n') {
+                startLocations = forLoop.getIterValues();
+            }
+        }
+
+        // Create makeBeats
+        for (int i = 0; i < startLocations.size(); i++) {
+            makeBeats.add(new ESMakeBeat(makeBeat.getSampleName(), -1,
+                    startLocations.get(i), makeBeat.getBeatPattern()));
+        }
+        return makeBeats;
+    }
+
+    public static void killAllMediaPlayers() {
+        for (CountDownTimer timer : playTimers) {
+            timer.cancel();
+            timer.onFinish();
+        }
     }
 
     /*

@@ -272,7 +272,6 @@ public class LoginActivity extends Activity {
                     && !loginStatusRequest.isCanceled()) {
             }
             final int SUCCESSFUL_LOGIN_CODE = 200;
-            // TODO: Make this actually asynchronous.. because right now, I don't think it will work.
             // TODO: register new user here.
             Log.i(TAG, "Request Status Code:" + loginStatusRequest.getStatusCode());
             return loginStatusRequest.getStatusCode() == SUCCESSFUL_LOGIN_CODE;
