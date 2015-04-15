@@ -59,6 +59,8 @@ public class ESAudio extends Thread {
         }
 
 
+
+
         //final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         final MediaPlayer mediaPlayer = MediaPlayer.create(context, sampleId);
         Log.i(TAG, "Created MediaPlayer, duration: " + mediaPlayer.getDuration());

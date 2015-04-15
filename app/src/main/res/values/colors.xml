@@ -25,5 +25,10 @@
     <color name="cyan">#17DA99</color>
     <color name="blueDark">#095271</color>
     <color name="orange">#E89257</color>
+    <color name="purple">#630D9E</color>
+    <color name="brownDark">#683614</color>
+    <color name="greenBright">#009732</color>
+
+
 
 </resources>

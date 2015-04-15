@@ -55,7 +55,10 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
             getResources().getColor(R.color.orange),
             getResources().getColor(R.color.blueDark),
             getResources().getColor(R.color.cyan),
-            getResources().getColor(R.color.yellow)
+            getResources().getColor(R.color.yellow),
+            getResources().getColor(R.color.greenBright),
+            getResources().getColor(R.color.brownDark),
+            getResources().getColor(R.color.purple)
     };
 
     // Constructor
@@ -158,7 +161,7 @@ public class Surface_Minimap extends SurfaceView implements SurfaceHolder.Callba
             for (Section section : mSections) {
                 List<Pair<Double, Double>> measures = section.calcActiveMeasures();
 
-                int color = colors[counter%4];
+                int color = colors[counter%7];
 
                 rectPaint = new Paint();
                 rectPaint.setColor(color);

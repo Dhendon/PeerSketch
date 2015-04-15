@@ -97,25 +97,35 @@ public class Activity_Main
 
         // Creating mSections
         // Lead synth
-        Section synthHarp = new Section("Electro 2");
-        synthHarp.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO2], 0, 2, 4), 0); // Adding fitMedia
+        Section synthHarp = new Section("Funk Bass");
+        synthHarp.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.FUNK_BASS1], 0, 2, 4), 0); // Adding fitMedia
         song.addSection(synthHarp, 0);
 
         // Organ
-        Section organ = new Section("Electro 3");
-        organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 0, 1, 3), 0); // Adding fitMedia
+        Section organ = new Section("Hi-Hat Roll");
+        organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.HIHAT_ROLL1], 0, 1, 3), 0); // Adding fitMedia
         //organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 1, 4, 5), 1); // Adding fitMedia
         song.addSection(organ, 1);
 
         // Electro
-        Section electro = new Section("Electro 1");
-        electro.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO1], 0, 2, 3), 0); // Adding fitMedia
+        Section electro = new Section("Funk Guitar 1");
+        electro.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.FUNK_GUITAR1], 0, 2, 3), 0); // Adding fitMedia
         song.addSection(electro, 2);
 
         // Electro
-        Section electro2 = new Section("Electro 1");
-        electro2.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ORGAN], 0, 2, 3), 0); // Adding fitMedia
+        Section electro2 = new Section("Funk Bass 1");
+        electro2.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.FUNK_BASS1], 0, 1, 3), 0); // Adding fitMedia
         song.addSection(electro2, 3);
+
+        // Electro
+        Section electro3 = new Section("Techno Synth");
+        electro3.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.TECHNO_SYNTH1], 0, 3, 5), 0); // Adding fitMedia
+        song.addSection(electro3, 4);
+
+        // Electro
+        Section electro4 = new Section("Clap");
+        electro4.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.CLAP], 0, 3, 5), 0); // Adding fitMedia
+        song.addSection(electro4, 5);
 
         // Adding song to song library
         mSongLibrary.addSong(song);
