@@ -3,56 +3,90 @@
 
 package gatech.adam.peersketch;
 
-import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ClipData;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Toast;
 
-import audio.ESAudio;
+import java.util.List;
+
 import data.ESFitMedia;
+import data.ESMakeBeat;
+import data.ESSetEffect;
+import data.ForLoop;
+import data.Group;
+import data.GroupObject;
+import data.IfStatement;
 import data.Section;
 import data.Song;
 import data.SongLibrary;
 import data.Util;
 import gatech.adam.peersketch.views.ExpandableList_Child;
+import ui.CreateFitMediaDialogFragment;
+import ui.CreateForLoopChoiceDialogFragment;
+import ui.CreateForLoopDialogFragment;
+import ui.CreateForLoopFitmediaDialogFragment;
+import ui.CreateForLoopMakeBeatDialogFragment;
+import ui.CreateMakeBeatDialogFragment;
+import ui.CreateSectionDialogFragment;
+import ui.CreateSetEffectDialogFragment;
 
 public class Activity_Main
-        extends Activity
-        implements Drawer_Pallet.PalletDrawerCallbacks, Drawer_Navigation.NavigationDrawerCallbacks {
+        extends FragmentActivity
+        implements Drawer_Pallet.PalletDrawerCallbacks, Drawer_Navigation.NavigationDrawerCallbacks,
+        CreateFitMediaDialogFragment.FitMediaDialogListener,
+        CreateForLoopDialogFragment.ForLoopDialogListener,
+        CreateMakeBeatDialogFragment.MakeBeatDialogListener,
+        CreateSetEffectDialogFragment.SetEffectDialogListener,
+        CreateForLoopFitmediaDialogFragment.ForLoopFitMediaDialogListener,
+        CreateForLoopMakeBeatDialogFragment.ForLoopMakeBeatDialogListener,
+        CreateForLoopChoiceDialogFragment.ForLoopChoiceDialogListener,
+        CreateSectionDialogFragment.SectionDialogListener {
 
-    // Fragments
-    private FragmentManager mFragmentManager; // Fragment manager, used for switching fragments
+    // Data
+    private static Song currentSong;
+    // App
+    private static String TAG = "main-activity";
     public DrawerLayout mDrawerContainer; // Drawer container
     public Drawer_Navigation mNavigationDrawer; // Navigation drawer
     public Drawer_Pallet mPalletDrawer; // Pallet drawer
-
     public Fragment mSongLibraryFragment; // Song library
     public Fragment_SongEdit mSongEditorFragment; // Song editor
     public Fragment_SectionEdit mSectionEditorFragment; // Section editor
     public Fragment_Fab mFabFragment; // Floating action button
-
-    // Data
-    private Song mSong;
-    private Section mSection;
     public SongLibrary mSongLibrary = new SongLibrary();
-    public enum ExpandableListAdapterMode {SONG_EDITOR, PALLET_DRAWER};
-
-    // Mode
-    public enum Mode {SONG_LIBRARY, SONG_EDITOR, SECTION_EDITOR};
     public Mode mMode;
+    // Fragments
+    private FragmentManager mFragmentManager; // Fragment manager, used for switching fragments
+    private Section currentSection;
+    private int sectionNumber;
+    private Group selectedToAddGroup;
+    private Context context = this;
+    private boolean refreshUI = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Initializing dummy data
         initData();
+
+        if (currentSong == null) {
+            currentSong = new Song(120);
+        } else if (!currentSong.getSections().isEmpty()) {
+            currentSection = currentSong.getSections().get(0);
+            sectionNumber = 0;
+        } else {
+            currentSection = new Section("New Section");
+            currentSong.addSection(currentSection, 0);
+        }
 
         // Restoring saved instance state, if available
         super.onCreate(savedInstanceState);
@@ -85,7 +119,6 @@ public class Activity_Main
         mNavigationDrawer.setUp( // Set up the drawer
                 R.id.navigation_drawer, // Root drawer view id, activity_main
                 mDrawerContainer); // Drawer layout id, activity_main
-
     }
 
     // Initialize dummy data
@@ -122,6 +155,111 @@ public class Activity_Main
     }
 
     @Override
+    public void onDialogPositiveClick(DialogFragment dialog, ESFitMedia value) {
+        if (!value.hasVariable() ||
+                (value.hasVariable() && currentSection.getVariables().containsKey(value.getStartVariable()))
+                        && currentSection.getVariables().containsKey(value.getEndVariable())) {
+            value.setSectionNumber(sectionNumber);
+            // TODO(hendon)
+            currentSection.add(value, Util.DROP_LOCATION);
+            currentSection.addObject(value);
+            //mSectionItemsAdapter.add(value.toString());
+            //mSectionItemsAdapter.notifyDataSetChanged();
+            if (selectedToAddGroup != null) {
+                Log.i(TAG, "Added new FitMedia: " + value.toString() + " to "
+                        + selectedToAddGroup.toString());
+                updateGroups(value);
+            } else {
+                Log.i(TAG, "Added new FitMedia: " + value.toString());
+            }
+        } else {
+            String unknownVariable = "";
+            if (!currentSection.getVariables().containsKey(value.getStartVariable())) {
+                unknownVariable += value.getStartVariable();
+            }
+            if (!currentSection.getVariables().containsKey(value.getEndVariable())) {
+                unknownVariable += " " + value.getEndVariable();
+            }
+            Toast.makeText(context, "Unrecognized variable(s)" + unknownVariable +
+                    " check your spelling!", Toast.LENGTH_SHORT).show();
+            promptForLoopFitMediaDialogAndWrite();
+        }
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, ForLoop value) {
+        value.setSectionNumber(sectionNumber);
+        if (!currentSection.addVariable(value.getVariable(), value.getIterValues())) {
+            Toast.makeText(context, "Variable name:" + value.getVariable() + " already taken." +
+                    " Please try again with a new name!", Toast.LENGTH_SHORT).show();
+        } else {
+            if (selectedToAddGroup != null) {
+                Log.i(TAG, "Added new ForLoop: " + value.toString() + " to "
+                        + selectedToAddGroup.toString());
+                updateGroups(value);
+            } else {
+                Log.i(TAG, "Added new ForLoop: " + value.toString());
+                currentSection.add(value, Util.DROP_LOCATION);
+                currentSection.addObject(value);
+            }
+        }
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, ESSetEffect value) {
+        value.setSectionNumber(sectionNumber);
+        // TODO(hendon)
+        currentSection.add(value, Util.DROP_LOCATION);
+        currentSection.addObject(value);
+        //mSectionItemsAdapter.add(value.toString());
+        //mSectionItemsAdapter.notifyDataSetChanged();
+        if (selectedToAddGroup != null) {
+            Log.i(TAG, "Added new SetEffect: " + value.toString() + " to "
+                    + selectedToAddGroup.toString());
+            updateGroups(value);
+        } else {
+            Log.i(TAG, "Added new SetEffect: " + value.toString());
+        }
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, int choiceID) {
+        if (choiceID == Util.ForLoopChoice.FITMEDIA) {
+            promptForLoopFitMediaDialogAndWrite();
+        } else if (choiceID == Util.ForLoopChoice.MAKEBEAT) {
+            promptForLoopMakeBeatDialogAndWrite();
+        } else if (choiceID == Util.ForLoopChoice.FORLOOP) {
+            // TODO: Deal with Nesting
+            promptForLoopDialogAndWrite();
+        } else if (choiceID != Util.ForLoopChoice.UNASSIGNED) {
+            Toast.makeText(context,
+                    "Unimplemented choice selected: " + choiceID,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+        @Override
+    public void onDialogPositiveClick(DialogFragment dialog, ESMakeBeat value) {
+        if (!value.hasVariable() ||
+                (value.hasVariable() && currentSection.getVariables().containsKey(value.getStartVariable()))) {
+            value.setSectionNumber(sectionNumber);
+            currentSection.add(value, Util.DROP_LOCATION);
+            currentSection.addObject(value);
+            if (selectedToAddGroup != null) {
+                Log.i(TAG, "Added new MakeBeat: " + value.toString() + " to "
+                        + selectedToAddGroup.toString());
+                updateGroups(value);
+            } else {
+                Log.i(TAG, "Added new MakeBeat: " + value.toString());
+            }
+        } else {
+            Toast.makeText(context, "Unrecognized variable, check your spelling!",
+                    Toast.LENGTH_SHORT).show();
+            promptForLoopMakeBeatDialogAndWrite();
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         switch (mMode) {
             case SECTION_EDITOR:
@@ -138,19 +276,19 @@ public class Activity_Main
     }
 
     public Song getSong() {
-        return mSong;
+        return currentSong;
     }
 
     public void setSong(Song to) {
-        this.mSong = to;
+        this.currentSong = to;
     }
 
-    public Section getSection() {
-        return mSection;
+    public Section getCurrentSection() {
+        return currentSection;
     }
 
-    public void setSection(Section to) {
-        this.mSection = to;
+    public void setCurrentSection(Section to) {
+        this.currentSection = to;
     }
 
     // Lock or unlock the pallet drawer
@@ -178,12 +316,12 @@ public class Activity_Main
 
         switch (to) {
             case SONG_EDITOR:
-                switchTo = Fragment_SongEdit.newInstance(mSong);
+                switchTo = Fragment_SongEdit.newInstance(currentSong);
                 isPalletVisible = true;
                 isFabVisible = true;
                 break;
             case SECTION_EDITOR:
-                switchTo = Fragment_SectionEdit.newInstance(mSection);
+                switchTo = Fragment_SectionEdit.newInstance(currentSection);
                 isPalletVisible = true;
                 isFabVisible = true;
                 break;
@@ -196,10 +334,11 @@ public class Activity_Main
         }
 
         // Replace current fragment with new fragment
-        mFragmentManager.beginTransaction()
-                .replace(R.id.container, switchTo)
-                .commit();
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        transaction.replace(R.id.container, switchTo);
+        transaction.commit();
 
+        refreshUI = false;
         // Configure pallet drawer
         if(isPalletVisible) { setPalletDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED); }
         else { setPalletDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED); }
@@ -208,11 +347,10 @@ public class Activity_Main
         mMode = to;
     }
 
-
-
     // Navigation drawer click listener
     public void onNavigationDrawerItemSelected(int position) {
         // Choosing replacement fragment
+        // TODO: Update when collab cloud gets updated.
         Mode to;
         switch (position) {
             case 1: // Collab Cloud, Friend Zone
@@ -238,8 +376,6 @@ public class Activity_Main
 
     public void onPalletDrawerItemDrag(ExpandableList_Child item, View view) {
 
-
-
         // Saving data to be transferred to drop target, i.e. song fragment
         ClipData data = ClipData.newPlainText(item.getName(), item.getTag());
 
@@ -247,4 +383,103 @@ public class Activity_Main
         View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
         view.startDrag(data, shadowBuilder, item, 0);
     }
+
+    public void promptForLoopChoiceDialog() {
+        refreshUI = true;
+        DialogFragment newFragment = new CreateForLoopChoiceDialogFragment();
+        newFragment.show(getFragmentManager(), "createForLoopChoice");
+    }
+
+    public void promptFitMediaDialogAndWrite() {
+        refreshUI = true;
+        DialogFragment newFragment = new CreateFitMediaDialogFragment();
+        newFragment.show(getFragmentManager(), "createFitMedia");
+    }
+
+    public void promptMakeBeatDialogAndWrite() {
+        refreshUI = true;
+        DialogFragment newFragment = new CreateMakeBeatDialogFragment();
+        newFragment.show(getFragmentManager(), "createMakeBeat");
+    }
+
+    public void promptForLoopDialogAndWrite() {
+        refreshUI = true;
+        DialogFragment newFragment = new CreateForLoopDialogFragment();
+        newFragment.show(getFragmentManager(), "createForLoop");
+    }
+
+    public void promptSetEffectDialogAndWrite() {
+        refreshUI = true;
+        DialogFragment newFragment = new CreateSetEffectDialogFragment();
+        newFragment.show(getFragmentManager(), "createSetEffect");
+    }
+
+    public void promptForLoopFitMediaDialogAndWrite() {
+        refreshUI = true;
+        DialogFragment newFragment = CreateForLoopFitmediaDialogFragment.newInstance(currentSection);
+        newFragment.show(getFragmentManager(), "createForLoopFitMedia");
+    }
+
+    public void promptForLoopMakeBeatDialogAndWrite() {
+        refreshUI = true;
+        DialogFragment newFragment = CreateForLoopMakeBeatDialogFragment.newInstance(currentSection);
+        newFragment.show(getFragmentManager(), "createForLoopMakeBeat");
+    }
+
+    public void promptCreateSection() {
+        refreshUI = true;
+        DialogFragment newFragment = CreateSectionDialogFragment.newInstance(currentSong);
+        newFragment.show(getFragmentManager(), "createSection");
+    }
+
+    public void updateGroups(GroupObject value) {
+        for (Group group : currentSection.getSubgroups()) {
+            if (selectedToAddGroup.equals(group)) {
+                if (group.getClass().equals(ForLoop.class)) {
+                    List<ForLoop> forLoops = currentSection.getForLoops();
+                    ForLoop containerForLoop = (ForLoop) group;
+                    for (int i = 0; i < forLoops.size(); i++) {
+                        if (forLoops.get(i).equals(containerForLoop)) {
+                            forLoops.get(i).addObject(value);
+                            if (value.getClass().equals(ESFitMedia.class)) {
+                                ESFitMedia fitMedia = (ESFitMedia) value;
+                                forLoops.get(i).add(fitMedia);
+                            } else if (value.getClass().equals(ESMakeBeat.class)) {
+                                ESMakeBeat makeBeat = (ESMakeBeat) value;
+                                forLoops.get(i).add(makeBeat);
+                            } else if (value.getClass().equals(ForLoop.class)) {
+                                ForLoop forLoop = (ForLoop) value;
+                                forLoops.get(i).add(forLoop);
+                            } else {
+                                Log.e(TAG, "Attempted to add unknown / unimplemented " +
+                                        "class to forLoop");
+                            }
+                            Log.i(TAG, "Found for loop for adding at forLoops[" + i + "].");
+                            break;
+                        }
+                    }
+                } else if (group.getClass().equals(IfStatement.class)) {
+                    // TODO when if statements are added
+                    Toast.makeText(context, "TODO: implement option in createForLoop!",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Log.e(TAG, "Attempted to add group of unknown type: "
+                            + group.getClass().getName());
+                }
+                selectedToAddGroup = null;
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, String sectionName) {
+        // This doesn't really do anything..
+    }
+
+    public enum ExpandableListAdapterMode {SONG_EDITOR, PALLET_DRAWER}
+
+// Mode
+    public enum Mode {SONG_LIBRARY, SONG_EDITOR, SECTION_EDITOR}
+
 }

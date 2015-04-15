@@ -15,6 +15,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import data.ESMakeBeat;
+import data.Section;
 import data.Util;
 import gatech.adam.peersketch.R;
 
@@ -25,6 +26,16 @@ public class CreateMakeBeatDialogFragment extends DialogFragment {
 
     public final String TAG = "create-makebeat-dialog";
     private MakeBeatDialogListener mListener;
+
+    public static CreateMakeBeatDialogFragment newInstance(Section currentSection) {
+        CreateMakeBeatDialogFragment fragment = new CreateMakeBeatDialogFragment();
+
+        Bundle variablesBundle = new Bundle();
+        variablesBundle.putSerializable(Util.BundleKeys.SECTION, currentSection);
+        fragment.setArguments(variablesBundle);
+
+        return fragment;
+    }
 
     @Override
     public void onAttach(Activity activity) {

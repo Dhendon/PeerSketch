@@ -44,17 +44,6 @@ public class IfStatement extends Group implements Serializable {
         } catch (NumberFormatException e) {
         }
 
-        if (Double.isInfinite(firstValue)) {
-            if (parentSong.getVariables().containsKey(firstItem)) {
-                firstValue = Double.parseDouble(parentSong.getVariables().get(firstItem));
-            }
-        } else if (Double.isInfinite(secondValue)) {
-            // TODO: Lookup value from Variable
-            if (parentSong.getVariables().containsKey(secondItem)) {
-                firstValue = Double.parseDouble(parentSong.getVariables().get(secondItem));
-            }
-        }
-
         // By now, values are assigned
         if (conditional.equals(Util.CONDITIONALS[Util.Conditionals.EQUAL])) {
             return firstValue == secondValue;

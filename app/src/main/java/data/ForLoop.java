@@ -1,26 +1,52 @@
 package data;
 
+import android.util.Log;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by davidhendon on 10/28/14.
  */
 public class ForLoop extends Group implements Serializable {
     private static final long serialVersionUID = 3L;
-    private int start;
-    private int stepSize; //TODO: check stepSize to make sure it's valid
-    private int end;
+    private double start;
+    private double stepSize; //TODO: check stepSize to make sure it's valid
+    private double end;
     private String variable;
     private int sectionNumber;
     private char operand;
-    private double amount;
+    private List<Double> iterValues;
 
-    public ForLoop(int start, int stepSize, int end, String variable) {
+    public ForLoop(double start, double stepSize, double end, String variable, char operand) {
         this.start = start;
         this.stepSize = stepSize;
         this.end = end;
         this.variable = variable;
         sectionNumber = -1;
+        this.operand = operand;
+        iterValues = new ArrayList<Double>();
+    }
+
+    public List<Double> getIterValues() {
+        // TODO: IsValid checks that don't cause this to return nothing.
+        iterValues = new ArrayList<Double>();
+        if (operand == '+') {
+            for (double i = start; i < end; i += stepSize) {
+                iterValues.add(i);
+                Log.i("for-loop", "+ i=" + i);
+            }
+        } else if (operand == '-') {
+            for (double i = start; i < end; i -= stepSize) {
+                iterValues.add(i);
+                Log.i("for-loop", "- i=" + i);
+            }
+        } else {
+            Log.i("for-loop", "Unknown operand");
+        }
+
+        return iterValues;
     }
 
     public char getOperand() {
@@ -29,15 +55,6 @@ public class ForLoop extends Group implements Serializable {
 
     public void setOperand(char operand) {
         this.operand = operand;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-    // TODO: Determine conditionals?
-
-    public void setAmount(int amount) {
-        this.amount = amount;
     }
 
     public int getSectionNumber() {
@@ -56,7 +73,7 @@ public class ForLoop extends Group implements Serializable {
         this.variable = variable;
     }
 
-    public int getStart() {
+    public double getStart() {
         return start;
     }
 
@@ -64,7 +81,7 @@ public class ForLoop extends Group implements Serializable {
         this.start = start;
     }
 
-    public int getStepSize() {
+    public double getStepSize() {
         return stepSize;
     }
 
@@ -72,7 +89,7 @@ public class ForLoop extends Group implements Serializable {
         this.stepSize = stepSize;
     }
 
-    public int getEnd() {
+    public double getEnd() {
         return end;
     }
 

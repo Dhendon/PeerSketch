@@ -16,28 +16,28 @@
     </gatech.adam.peersketch.Surface_Minimap>
 
     <com.melnykov.fab.FloatingActionButton
+        android:id="@+id/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/play"
-        fab:fab_colorNormal="@color/red"
-        android:src="@android:drawable/ic_media_play"
         android:layout_marginLeft="28dip"
+        android:layout_marginTop="-28dp"
         android:background="@color/transparent"
-        android:layout_marginTop="-28dp" />
+        android:src="@android:drawable/ic_media_play"
+        fab:fab_colorNormal="@color/red" />
 
     <TextView
+        android:id="@+id/textView_sectionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/textView_sectionTitle"
         android:layout_gravity="center_horizontal"
+        android:paddingBottom="12dip"
+        android:paddingLeft="24dip"
+        android:paddingRight="24dip"
+        android:paddingTop="12dip"
+        android:text="New Text"
         android:textColor="@color/white"
         android:textSize="32sp"
         android:textStyle="bold"
-        android:paddingBottom="12dip"
-        android:paddingLeft="24dip"
-        android:paddingTop="12dip"
-        android:paddingRight="24dip"
         />
 
     <ScrollView
@@ -45,12 +45,18 @@
         android:layout_height="fill_parent">
 
         <LinearLayout
-            android:orientation="vertical"
+            android:id="@+id/linearLayou_functionBlocks"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/linearLayou_functionBlocks"
+            android:orientation="vertical"
             android:padding="@dimen/activity_horizontal_margin"/>
 
     </ScrollView>
+    <FrameLayout
+        android:id="@+id/fabContainer"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_marginTop="-400dp"
+        />
 
 </LinearLayout>

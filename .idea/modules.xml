@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PeerSketch.iml" filepath="$PROJECT_DIR$/PeerSketch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PeerSketchFinal.iml" filepath="$PROJECT_DIR$/PeerSketchFinal.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

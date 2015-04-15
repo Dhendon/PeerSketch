@@ -1,6 +1,5 @@
 package ui;
 
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -13,17 +12,31 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import data.ESFitMedia;
+import data.ESMakeBeat;
+import data.Section;
 import data.Util;
 import gatech.adam.peersketch.R;
 
-public class CreateFitMediaDialogFragment extends DialogFragment {
-    public final String TAG = "create-fitmedia-dialog";
-    private FitMediaDialogListener mListener;
+/**
+ * Created by hendon on 4/13/15.
+ */
+public class CreateForLoopMakeBeatDialogFragment extends DialogFragment {
+
+    public final String TAG = "create-makebeat-dialog";
+    private ForLoopMakeBeatDialogListener mListener;
+
+    public static CreateForLoopMakeBeatDialogFragment newInstance(Section currentSection) {
+        CreateForLoopMakeBeatDialogFragment fragment = new CreateForLoopMakeBeatDialogFragment();
+
+        Bundle variablesBundle = new Bundle();
+        variablesBundle.putSerializable(Util.BundleKeys.SECTION, currentSection);
+        fragment.setArguments(variablesBundle);
+
+        return fragment;
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -31,24 +44,29 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (FitMediaDialogListener) activity;
+            mListener = (ForLoopMakeBeatDialogListener) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
-                    + " must implement FitMediaDialogListener");
+                    + " must implement MakeBeatDialogListener");
         }
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Section currentSection = (Section) getArguments().getSerializable(Util.BundleKeys.SECTION);
+        String[] variables = currentSection.getVariables().keySet().toArray(new String[currentSection.getVariables().size()]);
+
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         // Null Root View is acceptable here because AlertDialog replaces it anyway.
-        final View prompt = inflater.inflate(R.layout.fragment_fitmedia_dialog, null);
+        final View prompt = inflater.inflate(R.layout.fragment_makebeat_dialog, null);
         // Setup UI elements
         final Spinner samplesSpinner = (Spinner) prompt.findViewById(
                 R.id.spinnerSamples);
+        final Spinner startVariableSpinner = (Spinner) prompt.findViewById(
+                R.id.spinnerStartVariable);
         //ArrayAdapter<CharSequence> adapter =
         //        ArrayAdapter.createFromResource(getActivity().getBaseContext(),
         //                R.array.default_samples, android.R.layout.simple_spinner_item);
@@ -57,75 +75,61 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
                 android.R.layout.simple_spinner_dropdown_item);
         adapter.addAll(Util.DEFAULT_SAMPLES);
         samplesSpinner.setAdapter(adapter);
+        ArrayAdapter<String> variableAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(),
+                android.R.layout.simple_spinner_dropdown_item);
+        variableAdapter.addAll(variables);
+        startVariableSpinner.setAdapter(variableAdapter);
         // TODO add in the ability to add custom samples -- in final UI.
         final EditText startEditText = (EditText) prompt.findViewById(
                 R.id.editTextStartLocation);
-        final EditText endEditText = (EditText) prompt.findViewById(
-                R.id.editTextEndLocation);
-        final LinearLayout startVariableLayout = (LinearLayout) prompt.findViewById(R.id.layoutStartVariable);
-        final LinearLayout endVariableLayout = (LinearLayout) prompt.findViewById(R.id.layoutEndVariable);
-        final RadioButton yesRadioButton = (RadioButton) prompt.findViewById(R.id.radioButtonYes);
-        final RadioButton noRadioButton = (RadioButton) prompt.findViewById(R.id.radioButtonNo);
-        noRadioButton.setChecked(true);
+        final EditText beatPatternEditText = (EditText) prompt.findViewById(
+                R.id.editTextBeatPattern);
 
-        /*
+        final LinearLayout startVariableLayout = (LinearLayout) prompt.findViewById(R.id.layoutStartVariable);
+
         // Variable stuff
-        final EditText startVariableEditText = (EditText) prompt.findViewById(R.id.editTextStartVariable);
         final Spinner startVariableOperandSpinner = (Spinner) prompt.findViewById(R.id.spinnerStartOperand);
         final EditText startVariableAmountEditText = (EditText) prompt.findViewById(R.id.editTextStartAmount);
-        final EditText endVariableEditText = (EditText) prompt.findViewById(R.id.editTextEndVariable);
-        final Spinner endVariableOperandSpinner = (Spinner) prompt.findViewById(R.id.spinnerEndOperand);
-        final EditText endVariableAmountEditText = (EditText) prompt.findViewById(R.id.editTextEndAmount);
         ArrayAdapter<String> operandAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(),
                 android.R.layout.simple_spinner_dropdown_item);
         operandAdapter.addAll(Util.OPERANDS);
         startVariableOperandSpinner.setAdapter(operandAdapter);
-        endVariableOperandSpinner.setAdapter(operandAdapter);
 
-        yesRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVariableLayout.setVisibility(View.VISIBLE);
-                endVariableLayout.setVisibility(View.VISIBLE);
-                startEditText.setVisibility(View.GONE);
-                endEditText.setVisibility(View.GONE);
-            }
-        });
-        noRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVariableLayout.setVisibility(View.GONE);
-                endVariableLayout.setVisibility(View.GONE);
-                startEditText.setVisibility(View.VISIBLE);
-                endEditText.setVisibility(View.VISIBLE);
-            }
-        });
-        */
-        builder.setTitle("Create New FitMedia")
-                .setPositiveButton("Make it so!", new DialogInterface.OnClickListener() {
+        startVariableLayout.setVisibility(View.VISIBLE);
+        startEditText.setVisibility(View.GONE);
+        Toast.makeText(getActivity().getApplicationContext(),
+                "Please enter variable name and (optional) amount to modify it!",
+                Toast.LENGTH_SHORT).show();
+
+        builder.setTitle("Create New MakeBeat")
+                .setPositiveButton("Make it happen, Captain!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        String variableName = startVariableSpinner.getSelectedItem().toString();
                         String sampleName = samplesSpinner.getSelectedItem().toString();
-                        String rawStartLocation = startEditText.getText().toString();
-                        String rawEndLocation = endEditText.getText().toString();
-                        if (!rawStartLocation.equals("") && !rawEndLocation.equals("")
+                        String beatPattern = beatPatternEditText.getText().toString();
+                        if (!variableName.equals("") && !beatPattern.equals("")
                                 && !sampleName.equals("")) {
-                            double start = Double.parseDouble(rawStartLocation);
-                            double end = Double.parseDouble(rawEndLocation);
+                            char startOperand = Util.OPERANDS[startVariableOperandSpinner.getSelectedItemPosition()].charAt(0);
+                            double startAmount = 0;
+                            String startAmountRaw = startVariableAmountEditText.getText().toString();
+                            if (startOperand != 'n' && !startAmountRaw.equals("")) {
+                                startAmount = Double.parseDouble(startAmountRaw);
+                            }
                             Toast.makeText(getActivity().getApplicationContext(),
-                                    "Made FitMedia! (" + rawStartLocation + ", " + rawEndLocation + ")",
+                                    "Attempting to create MakeBeat!",
                                     Toast.LENGTH_SHORT).show();
-                            ESFitMedia value = new ESFitMedia(sampleName, -1, start, end);
-                            mListener.onDialogPositiveClick(CreateFitMediaDialogFragment.this, value);
-
+                            ESMakeBeat value = new ESMakeBeat(sampleName, beatPattern,
+                                    variableName, startOperand, startAmount, -1);
+                            mListener.onDialogPositiveClick(CreateForLoopMakeBeatDialogFragment.this,
+                                    value);
                         } else {
                             Toast.makeText(getActivity().getApplicationContext(),
                                     "Invalid parameters", Toast.LENGTH_SHORT).show();
-                            Log.i(TAG, "Unable to create FitMedia");
+                            Log.i(TAG, "Unable to create MakeBeat");
                         }
-
                     }
                 })
-                .setNegativeButton("Forget it", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Not today...", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
                     }
@@ -136,7 +140,10 @@ public class CreateFitMediaDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    public interface FitMediaDialogListener {
-        public void onDialogPositiveClick(DialogFragment dialog, ESFitMedia value);
+    public interface ForLoopMakeBeatDialogListener {
+        public void onDialogPositiveClick(DialogFragment dialog, ESMakeBeat value);
     }
+
 }
+
+

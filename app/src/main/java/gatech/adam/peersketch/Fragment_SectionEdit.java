@@ -1,12 +1,11 @@
 package gatech.adam.peersketch;
 
-import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.ClipData;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.text.Html;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,24 +16,26 @@ import com.melnykov.fab.FloatingActionButton;
 
 import java.util.List;
 
+import audio.ESAudio;
 import data.ESFitMedia;
+import data.ESMakeBeat;
+import data.ForLoop;
 import data.Section;
-import ui.CreateMakeBeatDialogFragment;
 
 public class Fragment_SectionEdit extends Fragment {
 
     private static final String SECTION_POSITION = "section";
+    public LinearLayout mBlockContainer;
     private int mSectionPosition;
-    private Section mSection;
-    private LinearLayout mBlockContainer;
+    private Section currentSection;
     private FloatingActionButton mFab;
     private Activity_Main mActivity;
     private SurfaceView mSongMap;
+    private Fragment_Fab mFabFragment;
 
     public static Fragment_SectionEdit newInstance(Section section) {
         Fragment_SectionEdit fragment = new Fragment_SectionEdit();
-        fragment.mSection = section;
-
+        fragment.currentSection = section;
         return fragment;
     }
 
@@ -52,11 +53,11 @@ public class Fragment_SectionEdit extends Fragment {
                              Bundle savedInstanceState) {
 
         // Inflate rootView to activity_main/container and get pointer
-        View rootView = inflater.inflate(R.layout.fragment_section_edit, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_section_edit, container, false);
 
         // Setting title
         TextView tv = (TextView) rootView.findViewById(R.id.textView_sectionTitle);
-        tv.setText(mSection.getName());
+        tv.setText(currentSection.getName());
 
         // Getting handle to block container
         mBlockContainer = (LinearLayout) rootView.findViewById(R.id.linearLayou_functionBlocks);
@@ -64,10 +65,30 @@ public class Fragment_SectionEdit extends Fragment {
         // Getting handle to minimap
         mSongMap = (SurfaceView) rootView.findViewById(R.id.surfaceView_songMap);
 
+        mSongMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
+
+        mFabFragment = Fragment_Fab.newInstance();
+        getFragmentManager().beginTransaction()
+                .add(R.id.fabContainer, mFabFragment)
+                .commit();
+
         // Creating fit media blocks
-        List<ESFitMedia> fitMedias = mSection.getFitMedias();
-        for (int i = 0; i < fitMedias.size(); i++) {
-            createFitMediaBlock(fitMedias.get(i));
+        List<ESFitMedia> fitMedias = currentSection.getFitMedias();
+        List<ESMakeBeat> makeBeats = currentSection.getMakeBeats();
+        List<ForLoop> forLoops = currentSection.getForLoops();
+        for (ESFitMedia fitMedia : fitMedias) {
+            createFitMediaBlock(fitMedia);
+        }
+        for (ESMakeBeat makeBeat : makeBeats) {
+            createMakeBeatBlock(makeBeat);
+        }
+        for (ForLoop forLoop : forLoops) {
+            createForLoopBlock(forLoop);
         }
 
         // Setting drag listener
@@ -76,13 +97,7 @@ public class Fragment_SectionEdit extends Fragment {
         return rootView;
     }
 
-    private void promptMakeBeatDialogAndWrite() {
-        // TODO: write toStrings for all the methods
-        DialogFragment newFragment = new CreateMakeBeatDialogFragment();
-        newFragment.show(getFragmentManager(), "createMakeBeat");
-    }
-
-    public void createFitMediaBlock(ESFitMedia fitMedia) {
+    public void createFitMediaBlock(final ESFitMedia fitMedia) {
         // Creating block
         TextView block =  new TextView(mActivity);
         block.setText(fitMedia.toString());
@@ -96,8 +111,103 @@ public class Fragment_SectionEdit extends Fragment {
         block.setElevation(5);
         block.setPadding(24, 24, 24, 24);
 
+        block.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ESAudio.play(fitMedia, mActivity.getApplicationContext(),
+                        mActivity.getSong().getTempoBPM(), mActivity.getSong().getPhraseLength());
+            }
+        });
+
+        block.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                currentSection.getFitMedias().remove(fitMedia);
+                mBlockContainer.invalidate();
+                return true;
+            }
+        });
+
         // Adding block to view
         mBlockContainer.addView(block, 0);
+
+    }
+
+    public void createMakeBeatBlock(final ESMakeBeat makeBeat) {
+        // Creating block
+        TextView block =  new TextView(mActivity);
+        block.setText(makeBeat.toString());
+        block.setBackgroundResource(R.drawable.shape_rounded_corners_makebeat);
+
+        // Styling block
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.FILL_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(64, 12, 24, 12);
+        block.setLayoutParams(params);
+        block.setTextSize(18);
+        block.setElevation(5);
+        block.setPadding(24, 24, 24, 24);
+
+        block.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ESAudio.play(makeBeat,mActivity.getApplicationContext(),
+                        mActivity.getSong().getTempoBPM(), mActivity.getSong().getPhraseLength());
+            }
+        });
+
+        block.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                currentSection.getMakeBeats().remove(makeBeat);
+                mBlockContainer.invalidate();
+                return true;
+            }
+        });
+        // Adding block to view
+        mBlockContainer.addView(block, 0);
+    }
+
+    public void createForLoopBlock(final ForLoop forLoop) {
+        // Creating block
+        TextView block =  new TextView(mActivity);
+        block.setText(forLoop.toString());
+        block.setBackgroundResource(R.drawable.shape_rounded_corners_forloop);
+
+        // Styling block
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.FILL_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(64, 12, 24, 12);
+        block.setLayoutParams(params);
+        block.setTextSize(18);
+        block.setElevation(5);
+        block.setPadding(24, 24, 24, 24);
+
+        block.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mActivity.promptForLoopChoiceDialog();
+            }
+        });
+
+        block.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                currentSection.getForLoops().remove(forLoop);
+                mBlockContainer.invalidate();
+                return true;
+            }
+        });
+        // Adding block to view
+        mBlockContainer.addView(block, 0);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mBlockContainer.invalidate();
     }
 
     private class DragEventListener_Fragment_Section
@@ -135,9 +245,7 @@ public class Fragment_SectionEdit extends Fragment {
                     }
                     break;
             }
-
             return true;
         }
     }
-
 }

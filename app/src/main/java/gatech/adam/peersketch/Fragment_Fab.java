@@ -14,11 +14,9 @@ import com.melnykov.fab.FloatingActionButton;
 
 import java.util.ArrayList;
 
-import data.Section;
-
 public class Fragment_Fab extends Fragment {
     private Activity_Main mActivity;
-    private FloatingActionButton mFabRoot, mFabSection, mFabGroup, mFabIf, mFabFor;
+    private FloatingActionButton mFabRoot, mFabSection, mFabMakeBeat, mFabFitMedia, mFabFor;
     private ArrayList<FloatingActionButton> mFabList = new ArrayList<FloatingActionButton>();
     private boolean isHidden = true;
 
@@ -49,16 +47,26 @@ public class Fragment_Fab extends Fragment {
 
         // Getting other fab handles, setting color, adding to fab list
         mFabFor = (FloatingActionButton) rootView.findViewById(R.id.fabFor);
-        mFabFor.setColorNormal(getResources().getColor(R.color.blue));
+        mFabFor.setColorNormal(getResources().getColor(R.color.orange));
         mFabList.add(mFabFor);
 
-        mFabIf = (FloatingActionButton) rootView.findViewById(R.id.fabIf);
-        mFabIf.setColorNormal(getResources().getColor(R.color.blue));
-        mFabList.add(mFabIf);
+        mFabMakeBeat = (FloatingActionButton) rootView.findViewById(R.id.fabMakeBeat);
+        mFabMakeBeat.setColorNormal(getResources().getColor(R.color.material_blue_500));
+        mFabList.add(mFabMakeBeat);
 
-        mFabGroup = (FloatingActionButton) rootView.findViewById(R.id.fabGroup);
-        mFabGroup.setColorNormal(getResources().getColor(R.color.red));
-        mFabList.add(mFabGroup);
+        mFabFitMedia = (FloatingActionButton) rootView.findViewById(R.id.fabFitMedia);
+        mFabFitMedia.setColorNormal(getResources().getColor(R.color.green));
+        mFabList.add(mFabFitMedia);
+
+        if (!mActivity.mMode.equals(Activity_Main.Mode.SECTION_EDITOR)) {
+            mFabFor.setVisibility(View.GONE);
+            mFabMakeBeat.setVisibility(View.GONE);
+            mFabFitMedia.setVisibility(View.GONE);
+        } else {
+            mFabFor.setVisibility(View.VISIBLE);
+            mFabMakeBeat.setVisibility(View.VISIBLE);
+            mFabFitMedia.setVisibility(View.VISIBLE);
+        }
 
         mFabSection = (FloatingActionButton) rootView.findViewById(R.id.fabSection);
         mFabSection.setColorNormal(getResources().getColor(R.color.red));
@@ -76,7 +84,28 @@ public class Fragment_Fab extends Fragment {
         mFabSection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addSection(new Section("New Section"));
+               mActivity.promptCreateSection();
+            }
+        });
+
+        mFabMakeBeat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mActivity.promptMakeBeatDialogAndWrite();
+            }
+        });
+
+        mFabFitMedia.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mActivity.promptFitMediaDialogAndWrite();
+            }
+        });
+
+        mFabFor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mActivity.promptForLoopDialogAndWrite();
             }
         });
 
@@ -84,10 +113,6 @@ public class Fragment_Fab extends Fragment {
         hide();
 
         return rootView;
-    }
-
-    public void addSection(Section section) {
-        // TODO:
     }
 
     public void toggleVisibility() {
@@ -135,9 +160,6 @@ public class Fragment_Fab extends Fragment {
         // Updating current state
         isHidden = false;
     }
-
-
-
 
 
 }

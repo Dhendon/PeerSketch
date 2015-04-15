@@ -3,11 +3,11 @@ package gatech.adam.peersketch;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.SharedPreferences;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,18 +15,15 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ExpandableListAdapter;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import audio.ESAudio;
 import data.ESFitMedia;
-import data.Section;
 import data.Util;
 import gatech.adam.peersketch.views.ExpandableList_Adapter;
 import gatech.adam.peersketch.views.ExpandableList_Child;
@@ -47,6 +44,7 @@ public class Drawer_Pallet extends Fragment {
     private LinearLayout mDrawerLinearLayout;
     private ListView mDrawerListView;
     private View mFragmentContainerView;
+    private Button mStopAudioButton;
 
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
@@ -103,6 +101,14 @@ public class Drawer_Pallet extends Fragment {
                     }
                 }
         );
+
+        mStopAudioButton = (Button) mDrawerLinearLayout.findViewById(R.id.buttonStopAudio);
+        mStopAudioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ESAudio.killAllMediaPlayers();
+            }
+        });
 
         // Set expandable list view adapter
         // Track Groups
@@ -174,6 +180,7 @@ public class Drawer_Pallet extends Fragment {
     }
 
     private void selectItem(int position) {
+        Log.i("drawer-pallet", "Is this even called? pos=" + position);
         mCurrentSelectedPosition = position;
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);

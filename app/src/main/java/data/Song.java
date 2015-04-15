@@ -41,6 +41,7 @@ public class Song extends Group implements Serializable {
         this.forLoops = new ArrayList<ForLoop>();
         this.effects = new ArrayList<ESSetEffect>();
         this.description = description;
+        groups = new ArrayList<Group>();
     }
 
     public void addSection(Section section, int location) {
@@ -162,6 +163,14 @@ public class Song extends Group implements Serializable {
 
     public void setGroups(List<Group> groups) {
         this.groups = groups;
+    }
+
+    public void addContainer(Group group, int location) {
+        if (validLocation(location, groups)) {
+            groups.add(location, group);
+        } else {
+            groups.add(group);
+        }
     }
 
 }

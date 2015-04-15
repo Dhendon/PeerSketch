@@ -10,13 +10,10 @@ import android.view.animation.RotateAnimation;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import audio.ESAudio;
-import data.ESFitMedia;
 import data.Group;
 import data.Section;
 import data.Song;
@@ -39,8 +36,6 @@ public class ExpandableList_Adapter extends BaseExpandableListAdapter {
         this.groups = parseSongToGroup(song);
         this.mMode = mode;
     }
-
-
 
     public ArrayList<ExpandableList_Group> parseSongToGroup(Song song) {
         // Get groups and sections

@@ -4,53 +4,60 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.LoaderManager.LoaderCallbacks;
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import data.Util;
+import network.LoginController;
 
 
 /**
  * A login screen that offers login via email/password.
 
  */
-public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
+public class Activity_Login extends Activity {
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
+    private static final String DUMMY_USERNAME = "peersketchtest";
+    private static final String DUMMY_PASSWORD = "test";
+    private String TAG = "login-activity";
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
+    private AutoCompleteTextView mUsernameView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +65,10 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
         setContentView(R.layout.activity_login);
 
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
-
+        mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
         mPasswordView = (EditText) findViewById(R.id.password);
+        mUsernameView.setText(DUMMY_USERNAME);
+        mPasswordView.setText(DUMMY_PASSWORD);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -73,8 +80,17 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        Button mUsernameSignInButton = (Button) findViewById(R.id.username_sign_in_button);
+        Button mSkipLoginButton = (Button) findViewById(R.id.skip_login_button);
+        mSkipLoginButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent songEditorActivity = new Intent(context, Activity_Main.class);
+                startActivity(songEditorActivity);
+                finish();
+            }
+        });
+        mUsernameSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -83,16 +99,12 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        context = this;
     }
-
-    private void populateAutoComplete() {
-        getLoaderManager().initLoader(0, null, this);
-    }
-
 
     /**
      * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
+     * If there are form errors (invalid username, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
     public void attemptLogin() {
@@ -101,11 +113,11 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
         }
 
         // Reset errors.
-        mEmailView.setError(null);
+        mUsernameView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
+        String username = mUsernameView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
@@ -119,14 +131,14 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
             cancel = true;
         }
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
+        // Check for a valid username address.
+        if (TextUtils.isEmpty(username)) {
+            mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = mUsernameView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
+        } else if (!isUsernameValid(username)) {
+            mUsernameView.setError(getString(R.string.error_invalid_email));
+            focusView = mUsernameView;
             cancel = true;
         }
 
@@ -138,18 +150,19 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(username, password);
             mAuthTask.execute((Void) null);
         }
     }
-    private boolean isEmailValid(String email) {
+
+    private boolean isUsernameValid(String username) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return username.length() > 0;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() > 0;
     }
 
     /**
@@ -188,95 +201,83 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                                                                     .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<String>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-
-        addEmailsToAutoComplete(emails);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
-
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<String>(Activity_Login.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
-        mEmailView.setAdapter(adapter);
-    }
-
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mEmail;
+        private final String mUsername;
         private final String mPassword;
 
-        UserLoginTask(String email, String password) {
-            mEmail = email;
+        UserLoginTask(String username, String password) {
+            mUsername = username;
             mPassword = password;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
+            String user = mUsername;
+            String pwd = mPassword;
+            final List<JSONObject> responses = new ArrayList<JSONObject>();
+            /*
+             VERY IMPORTANT: Base64 on Android is different from Apache Base64
+             must use Base64.NO_WRAP to emulate btoa from ES server.
+             http://stackoverflow.com/questions/17912119/is-there-any-difference-between-apaches-base64-encodebase64-and-androids-base6
+             */
+            String pwdencode = Base64.encodeToString(pwd.getBytes(), Base64.NO_WRAP);
+            String loginURL = Util.ES_LOGIN_BASE_URL + "/services/scripts/findall?username=" + user + "&password=" + pwdencode;
 
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+            //RequestQueue queue = Volley.newRequestQueue(context);
+            Log.i(TAG, "Attempting login to:" + loginURL);
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+            LoginController controller = LoginController.getInstance(context);
+            Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+                private boolean notified = false;
+
+                @Override
+                public void onResponse(JSONObject response) {
+                    notified = true;
+                    VolleyLog.d(TAG, "JSONObject response:" + response.toString());
+                    responses.add(response);
                 }
-            }
 
-            // TODO: register the new account here.
-            return true;
+                @Override
+                public String toString() {
+                    return notified ? "notified" : "not notified";
+                }
+            };
+            Response.ErrorListener errorListener = new Response.ErrorListener() {
+                private boolean notified = false;
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    notified = true;
+                    Toast.makeText(context, "Unable to connect to network!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public String toString() {
+                    return notified ? "notified" : "not notified";
+                }
+            };
+            LoginStatusRequest loginStatusRequest = new LoginStatusRequest
+                    (Request.Method.GET, loginURL, null, listener, errorListener);
+            controller.getRequestQueue().add(loginStatusRequest);
+
+            // TODO: make this not require overriding a toString to check for notification
+
+            // This while loop is used to wait for a network response before returning.
+            while (!errorListener.toString().equals("notified")
+                    && !listener.toString().equals("notified")
+                    && !loginStatusRequest.isCanceled()) {
+            }
+            final int SUCCESSFUL_LOGIN_CODE = 200;
+            // TODO: register new user here.
+            Log.i(TAG, "Request Status Code:" + loginStatusRequest.getStatusCode());
+            return loginStatusRequest.getStatusCode() == SUCCESSFUL_LOGIN_CODE;
         }
 
         @Override
@@ -285,6 +286,12 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
             showProgress(false);
 
             if (success) {
+                //Intent homeActivity = new Intent(context, HomeActivity.class);
+                //startActivity(homeActivity);
+                // TODO: Go back to fragments after demo.
+                Toast.makeText(context, mUsername + " logged in successfully", Toast.LENGTH_SHORT).show();
+                Intent songEditorActivity = new Intent(context, Activity_Main.class);
+                startActivity(songEditorActivity);
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -298,7 +305,32 @@ public class Activity_Login extends Activity implements LoaderCallbacks<Cursor>{
             showProgress(false);
         }
     }
+
+    /**
+     * This class is used to read the status code from the Request made to ES Servers.
+     */
+    private class LoginStatusRequest extends JsonObjectRequest {
+        private int statusCode = -1;
+
+        public LoginStatusRequest(int method, String url, JSONObject jsonRequest,
+                                  Response.Listener<JSONObject> listener,
+                                  Response.ErrorListener errorListener) {
+            super(method, url, jsonRequest, listener, errorListener);
+        }
+
+        @Override
+        protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+            statusCode = response.statusCode;
+            return super.parseNetworkResponse(response);
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+    }
+
 }
+
 
 
 

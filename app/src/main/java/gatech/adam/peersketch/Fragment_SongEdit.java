@@ -4,7 +4,6 @@
 package gatech.adam.peersketch;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,10 +11,10 @@ import android.util.Pair;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -44,7 +43,6 @@ public class Fragment_SongEdit extends Fragment {
     public static Fragment_SongEdit newInstance(Song song) {
         Fragment_SongEdit fragment = new Fragment_SongEdit();
         fragment.mSong = song;
-
         return fragment;
     }
 
@@ -66,26 +64,26 @@ public class Fragment_SongEdit extends Fragment {
                              Bundle savedInstanceState) {
 
         // Inflate rootView to activity_main/container and get pointer
-        View rootView = inflater.inflate(R.layout.fragment_song_edit, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_song_edit, container, false);
 
         // Getting song minimap
         mSongMap = (Surface_Minimap) rootView.findViewById(R.id.surfaceView_songMap);
-       mSongMap.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
+        mSongMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(mActivity.getApplicationContext(),
+                        "Minimap item selected", Toast.LENGTH_SHORT).show();
 
-           }
-       });
+            }
+        });
 
         mSongMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 Log.v("Activity_Main", "Test");
-
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     int x = (int) event.getX();
                     int y = (int) event.getY();
-
 
                     List<Pair<Rect, Integer >> rectanglePairs = mSongMap.getRectanglePairs();
                     for (Pair<Rect, Integer> pair : rectanglePairs) {
@@ -131,17 +129,13 @@ public class Fragment_SongEdit extends Fragment {
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                ESAudio.play(mSong, mActivity);
+                for (Section section : mSong.getSections()) {
+                    ESAudio.play(section, mActivity);
+                }
             }
         });
 
-
         return rootView;
-    }
-
-    public void addSection(Section section) {
-        mSong.addSection(section, 0);
     }
 
     public Section getSection(int groupPosition) {
@@ -153,8 +147,14 @@ public class Fragment_SongEdit extends Fragment {
         return (Section) group.getSubgroups().get(childPosition);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+            mTrackList.invalidate();
+        }
+
     private class DragEventListener_Fragment_Song
-        implements View.OnDragListener {
+            implements View.OnDragListener {
 
         private boolean mCanReceive; // Stores whether this listener accepts drop events
 
@@ -192,7 +192,7 @@ public class Fragment_SongEdit extends Fragment {
     }
 
     private class GroupClickListener
-        implements ExpandableListView.OnGroupClickListener {
+            implements ExpandableListView.OnGroupClickListener {
 
         @Override
         public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
@@ -201,7 +201,7 @@ public class Fragment_SongEdit extends Fragment {
                 Section section = getSection(groupPosition);
 
                 // Updating main activity container to section fragment
-                mActivity.setSection(section);
+                mActivity.setCurrentSection(section);
                 mActivity.setMode(Activity_Main.Mode.SECTION_EDITOR);
                 return true;
             }
@@ -212,7 +212,7 @@ public class Fragment_SongEdit extends Fragment {
     }
 
     private class ChildClickListener
-        implements ExpandableListView.OnChildClickListener {
+            implements ExpandableListView.OnChildClickListener {
 
         @Override
         public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
@@ -221,7 +221,7 @@ public class Fragment_SongEdit extends Fragment {
             Section section = getSection(groupPosition, childPosition);
 
             // Updating main activity container to section fragment
-            mActivity.setSection(section);
+            mActivity.setCurrentSection(section);
             mActivity.setMode(Activity_Main.Mode.SECTION_EDITOR);
             return false;
         }

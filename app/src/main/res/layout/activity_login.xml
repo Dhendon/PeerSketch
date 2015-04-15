@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="gatech.adam.peersketch.Activity_Login">
+    tools:context="gatech.adam.peersketch.LoginActivity">
 
     <!-- Login progress -->
     <ProgressBar
@@ -26,16 +26,16 @@
         >
 
             <LinearLayout
-                android:id="@+id/email_login_form"
+                android:id="@+id/username_login_form"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
                 <AutoCompleteTextView
-                    android:id="@+id/email"
+                    android:id="@+id/username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_email"
+                    android:hint="Username"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
                     android:singleLine="true"/>
@@ -44,7 +44,7 @@
                     android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_password"
+                    android:hint="Password"
                     android:imeActionId="@+id/login"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
@@ -53,7 +53,7 @@
                     android:singleLine="true"/>
 
                 <Button
-                    android:id="@+id/email_sign_in_button"
+                    android:id="@+id/username_sign_in_button"
                     style="?android:textAppearanceSmall"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -61,6 +61,15 @@
                     android:text="@string/action_sign_in"
                     android:textStyle="bold"/>
 
+                <Button
+                    android:id="@+id/skip_login_button"
+                    style="?android:textAppearanceSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="#1DE9B6"
+                    android:text="Continue without Signing in"
+                    android:textStyle="italic" />
             </LinearLayout>
     </ScrollView>
 
