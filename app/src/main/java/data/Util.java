@@ -37,8 +37,19 @@ public class Util {
             R.raw.y07_horns};
     public static final String[] DEFAULT_BEATS = {"––––0+++–––0+++", "0+++0+++0+0+0+",
             "0+0+––––0+0+–0++", "0++0++0+–––0++0+", "1–001–00–0–01–00"};
-    public static final String[] DEFAULT_SAMPLES = {"Synth Harp", "Clap", "Drumpad", "Electro 1",
-            "Electro 2", "Electro 3", "Hi Hats", "Percussion 1", "Percussion 2", "Organ"};
+    public static final String[] DEFAULT_SAMPLES = {"Wah Guitar","Sub Bass",
+            "Hip-Hop Bass", "Funk Bass 1",
+            "Funk Bass 2", "Synth Lead 1",
+            "Synth Lead 2", "Deep Synth Pad",
+            "Techno Synth 1", "Techno Synth 2",
+            "Techno Synth 3", "Dubstep Pad",
+            "Hip-Hop Drum Groove", "Stomp Beat",
+            "Trap Beat 1", "Trap Beat 2",
+            "Trap Beat 3", "Clap",
+            "Snare Roll", "Drum Pad",
+            "Hi-Hat Roll 1", "Hi-Hat Roll 2",
+            "Hi-Hat Roll 3", "Percussion 1",
+            "Percussion 2", "Strings", "Horns"};
     public static final int DEFAULT_TEMPO_BPM = 120;
     public static final int DEFAULT_PHRASE_LENGTH = 8;
     public static final int DROP_LOCATION = 0; // TODO: Remove this once drag and drop implemented
