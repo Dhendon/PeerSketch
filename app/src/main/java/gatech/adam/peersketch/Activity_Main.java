@@ -137,7 +137,7 @@ public class Activity_Main
 
         // Organ
         Section organ = new Section("Hi-Hat Roll");
-        organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.HIHAT_ROLL1], 0, 1, 3), 0); // Adding fitMedia
+        organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.HIHAT_ROLL1], 0, 0, 3), 0); // Adding fitMedia
         //organ.add(new ESFitMedia(Util.DEFAULT_SAMPLES[Util.DefaultSamples.ELECTRO3], 1, 4, 5), 1); // Adding fitMedia
         song.addSection(organ, 1);
 
