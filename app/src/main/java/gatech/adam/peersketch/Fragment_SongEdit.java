@@ -3,9 +3,9 @@
 
 package gatech.adam.peersketch;
 
-import android.app.Fragment;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.Pair;
 import android.view.DragEvent;
@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
@@ -120,6 +121,14 @@ public class Fragment_SongEdit extends Fragment {
         mTrackList.setAdapter(mTrackListAdapter);
         mTrackList.setOnGroupClickListener(new GroupClickListener());
         mTrackList.setOnChildClickListener(new ChildClickListener());
+        mTrackList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                mSections.remove(position);
+                mTrackListAdapter.notifyDataSetChanged();
+                return false;
+            }
+        });
 
         // Setting drag listeners
         mSongMap.setOnDragListener(new DragEventListener_Fragment_Song(false)); // Can't receive drops, sends view back to parent

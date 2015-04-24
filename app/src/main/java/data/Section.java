@@ -24,6 +24,7 @@ public class Section extends Group implements Serializable {
     private int sectionNumber;
     private int tempoBPM;
     private int phraseLengthMeasures;
+    private OnSectionChangedListener listener;
 
     public Section(String name) {
         this.name = name;
@@ -45,6 +46,10 @@ public class Section extends Group implements Serializable {
 
     public void setVariables(HashMap<String, List<Double>> variables) {
         this.variables = variables;
+    }
+
+    public void setListener(OnSectionChangedListener listener) {
+        this.listener = listener;
     }
 
     public boolean addVariable(String variable, List<Double> values) {
@@ -193,5 +198,9 @@ public class Section extends Group implements Serializable {
         }
         // TODO: incorporate makebeat and for loops
         return activeMeasures;
+    }
+
+    public interface OnSectionChangedListener {
+        public void onSectionChanged();
     }
 }

@@ -185,12 +185,43 @@ public class ESAudio extends Thread {
     }
 
     public static boolean play(Section section, Context context) {
-        if (!section.isValid()) {
+        /*if (!section.isValid()) {
             Log.i(TAG, "Attempted to play invalid section, name:" + section.getName());
             return false;
+        }*/
+        //List<ESFitMedia> allFitMedias = new ArrayList<ESFitMedia>();
+        //List<ESMakeBeat> allMakeBeats = new ArrayList<ESMakeBeat>();
+        for (ESFitMedia fitMedia : section.getFitMedias()) {
+            if (fitMedia.hasVariable()) {
+                List<ForLoop> currentForLoops = section.getForLoops();
+                for (ForLoop forLoop : currentForLoops) {
+                    if (forLoop.getVariable().equals(fitMedia.getStartVariable())) {
+                        ESAudio.playForLoopFitMedia(fitMedia, forLoop,
+                                context, section.getTempoBPM(), section.getPhraseLengthMeasures());
+                        break;
+                    }
+                }
+            } else {
+                ESAudio.play(fitMedia, context, section.getTempoBPM(),
+                        section.getPhraseLengthMeasures());
+            }
         }
-        List<ESFitMedia> allFitMedias = new ArrayList<ESFitMedia>();
-        List<ESMakeBeat> allMakeBeats = new ArrayList<ESMakeBeat>();
+        for (ESMakeBeat makeBeat : section.getMakeBeats()) {
+            if (makeBeat.hasVariable()) {
+                List<ForLoop> currentForLoops = section.getForLoops();
+                for (ForLoop forLoop : currentForLoops) {
+                    if (forLoop.getVariable().equals(makeBeat.getStartVariable())) {
+                        ESAudio.playForLoopMakeBeat(makeBeat, forLoop,
+                                context, section.getTempoBPM(), section.getPhraseLengthMeasures());
+                        break;
+                    }
+                }
+            } else {
+                ESAudio.play(makeBeat, context, section.getTempoBPM(),
+                        section.getPhraseLengthMeasures());
+            }
+        }
+        /*
         for (GroupObject object : section.getOrderedObjects()) {
             if (object.getClass() == ESMakeBeat.class) {
                 ESMakeBeat makeBeat = (ESMakeBeat) object;
@@ -222,21 +253,26 @@ public class ESAudio extends Thread {
             }
         }
 
-        List<CountDownTimer> timers = new ArrayList<CountDownTimer>();
+        //List<CountDownTimer> timers = new ArrayList<CountDownTimer>();
         // TODO: Add setEffect
+        Log.i(TAG, "Section fitMedias:" + allFitMedias.toString());
+        Log.i(TAG, "Section makeBeats:" + allMakeBeats.toString());
         for (ESFitMedia fitMedia : allFitMedias) {
-            timers.add(getReadyMediaPlayerForPlay(fitMedia, context, section.getTempoBPM(),
-                    section.getPhraseLengthMeasures()));
+            ESAudio.play(fitMedia, context, section.getTempoBPM(), section.getPhraseLengthMeasures());
+            //timers.add(getReadyMediaPlayerForPlay(fitMedia, context, section.getTempoBPM(),
+            //        section.getPhraseLengthMeasures()));
         }
         for (ESMakeBeat makeBeat : allMakeBeats) {
-            timers.add(getReadyMediaPlayerForPlay(makeBeat, context,
-                    section.getTempoBPM(), section.getPhraseLengthMeasures()));
+            ESAudio.play(makeBeat, context, section.getTempoBPM(), section.getPhraseLengthMeasures());
+            //timers.add(getReadyMediaPlayerForPlay(makeBeat, context,
+            //        section.getTempoBPM(), section.getPhraseLengthMeasures()));
         }
 
-        for (CountDownTimer timer : timers) {
-            Log.i(TAG, "Queuing timer at:" + System.currentTimeMillis());
-            timer.start();
-        }
+        //for (CountDownTimer timer : timers) {
+            //Log.i(TAG, "Queuing timer at:" + System.currentTimeMillis());
+            //timer.start();
+        //}
+        */
         return true;
     }
 

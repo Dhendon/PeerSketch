@@ -4,13 +4,13 @@
 package gatech.adam.peersketch;
 
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.ClipData;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
@@ -94,7 +94,7 @@ public class Activity_Main
         setContentView(R.layout.activity_main);
 
         // Getting fragment manager
-        mFragmentManager = getFragmentManager();
+        mFragmentManager = getSupportFragmentManager();
 
         // Adding song library to root container
         mSongLibraryFragment = Fragment_SongLibrary.newInstance();

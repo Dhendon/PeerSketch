@@ -1,8 +1,8 @@
 package gatech.adam.peersketch;
 
-import android.app.Fragment;
 import android.content.ClipData;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,21 +21,26 @@ import data.ESFitMedia;
 import data.ESMakeBeat;
 import data.ForLoop;
 import data.Section;
+import data.Util;
 
-public class Fragment_SectionEdit extends Fragment {
+public class Fragment_SectionEdit extends Fragment implements Section.OnSectionChangedListener {
 
     private static final String SECTION_POSITION = "section";
     public LinearLayout mBlockContainer;
     private int mSectionPosition;
-    private Section currentSection;
+    private Section mCurrentSection;
     private FloatingActionButton mFab;
     private Activity_Main mActivity;
     private SurfaceView mSongMap;
     private Fragment_Fab mFabFragment;
+    private FloatingActionButton mPlay;
 
     public static Fragment_SectionEdit newInstance(Section section) {
         Fragment_SectionEdit fragment = new Fragment_SectionEdit();
-        fragment.currentSection = section;
+        Bundle args = new Bundle();
+        args.putSerializable(Util.BundleKeys.SECTION, section);
+        fragment.setArguments(args);
+        fragment.mCurrentSection = section;
         return fragment;
     }
 
@@ -43,8 +48,12 @@ public class Fragment_SectionEdit extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = (Activity_Main) getActivity();
+        if (savedInstanceState != null) {
+            mCurrentSection = (Section) savedInstanceState.getSerializable(Util.BundleKeys.SECTION);
+        }
         if (getArguments() != null) {
-            mSectionPosition = getArguments().getInt(SECTION_POSITION);
+            mCurrentSection = (Section) getArguments().getSerializable(Util.BundleKeys.SECTION);
+            //mSectionPosition = getArguments().getInt(SECTION_POSITION);
         }
     }
 
@@ -57,30 +66,36 @@ public class Fragment_SectionEdit extends Fragment {
 
         // Setting title
         TextView tv = (TextView) rootView.findViewById(R.id.textView_sectionTitle);
-        tv.setText(currentSection.getName());
+        tv.setText(mCurrentSection.getName());
+        mCurrentSection.setListener(this);
 
         // Getting handle to block container
         mBlockContainer = (LinearLayout) rootView.findViewById(R.id.linearLayou_functionBlocks);
 
         // Getting handle to minimap
         mSongMap = (SurfaceView) rootView.findViewById(R.id.surfaceView_songMap);
-
-        mSongMap.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
+        mPlay = (FloatingActionButton) rootView.findViewById(R.id.play);
 
         mFabFragment = Fragment_Fab.newInstance();
         getFragmentManager().beginTransaction()
                 .add(R.id.fabContainer, mFabFragment)
                 .commit();
 
+        initView();
+        return rootView;
+    }
+
+    public void initView() {
+        mSongMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
         // Creating fit media blocks
-        List<ESFitMedia> fitMedias = currentSection.getFitMedias();
-        List<ESMakeBeat> makeBeats = currentSection.getMakeBeats();
-        List<ForLoop> forLoops = currentSection.getForLoops();
+        List<ESFitMedia> fitMedias = mCurrentSection.getFitMedias();
+        List<ESMakeBeat> makeBeats = mCurrentSection.getMakeBeats();
+        List<ForLoop> forLoops = mCurrentSection.getForLoops();
         for (ESFitMedia fitMedia : fitMedias) {
             createFitMediaBlock(fitMedia);
         }
@@ -94,7 +109,14 @@ public class Fragment_SectionEdit extends Fragment {
         // Setting drag listener
         mSongMap.setOnDragListener(new DragEventListener_Fragment_Section(false)); // Can't receive drops, sends view back to parent
 
-        return rootView;
+        // Setting play button listener
+
+        mPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ESAudio.play(mCurrentSection, mActivity);
+            }
+        });
     }
 
     public void createFitMediaBlock(final ESFitMedia fitMedia) {
@@ -115,13 +137,13 @@ public class Fragment_SectionEdit extends Fragment {
             @Override
             public void onClick(View v) {
                 if (fitMedia.hasVariable()) {
-                    List<ForLoop> currentForLoops = currentSection.getForLoops();
+                    List<ForLoop> currentForLoops = mCurrentSection.getForLoops();
                     for (ForLoop forLoop : currentForLoops) {
                         if (forLoop.getVariable().equals(fitMedia.getStartVariable())) {
                             ESAudio.playForLoopFitMedia(fitMedia, forLoop,
                                     mActivity.getApplicationContext(),
-                                    currentSection.getTempoBPM(),
-                                    currentSection.getPhraseLengthMeasures());
+                                    mCurrentSection.getTempoBPM(),
+                                    mCurrentSection.getPhraseLengthMeasures());
                             break;
                         }
                     }
@@ -135,7 +157,7 @@ public class Fragment_SectionEdit extends Fragment {
         block.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                currentSection.getFitMedias().remove(fitMedia);
+                mCurrentSection.getFitMedias().remove(fitMedia);
                 mBlockContainer.postInvalidate();
                 return true;
             }
@@ -143,6 +165,7 @@ public class Fragment_SectionEdit extends Fragment {
 
         // Adding block to view
         mBlockContainer.addView(block, 0);
+        mBlockContainer.invalidate();
 
     }
 
@@ -166,13 +189,13 @@ public class Fragment_SectionEdit extends Fragment {
             @Override
             public void onClick(View v) {
                 if (makeBeat.hasVariable()) {
-                    List<ForLoop> currentForLoops = currentSection.getForLoops();
+                    List<ForLoop> currentForLoops = mCurrentSection.getForLoops();
                     for (ForLoop forLoop : currentForLoops) {
                         if (forLoop.getVariable().equals(makeBeat.getStartVariable())) {
                             ESAudio.playForLoopMakeBeat(makeBeat, forLoop,
                                     mActivity.getApplicationContext(),
-                                    currentSection.getTempoBPM(),
-                                    currentSection.getPhraseLengthMeasures());
+                                    mCurrentSection.getTempoBPM(),
+                                    mCurrentSection.getPhraseLengthMeasures());
                             break;
                         }
                     }
@@ -186,13 +209,14 @@ public class Fragment_SectionEdit extends Fragment {
         block.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                currentSection.getMakeBeats().remove(makeBeat);
+                mCurrentSection.getMakeBeats().remove(makeBeat);
                 mBlockContainer.invalidate();
                 return true;
             }
         });
         // Adding block to view
         mBlockContainer.addView(block, 0);
+        mBlockContainer.postInvalidate();
     }
 
     public void createForLoopBlock(final ForLoop forLoop) {
@@ -221,7 +245,7 @@ public class Fragment_SectionEdit extends Fragment {
         block.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                currentSection.getForLoops().remove(forLoop);
+                mCurrentSection.getForLoops().remove(forLoop);
                 mBlockContainer.invalidate();
                 return true;
             }
@@ -231,9 +255,15 @@ public class Fragment_SectionEdit extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        mBlockContainer.invalidate();
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable(Util.BundleKeys.SECTION, mCurrentSection);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onSectionChanged() {
+        mBlockContainer.removeAllViews();
+        initView();
     }
 
     private class DragEventListener_Fragment_Section
