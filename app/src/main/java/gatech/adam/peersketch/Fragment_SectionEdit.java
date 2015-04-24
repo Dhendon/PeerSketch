@@ -23,7 +23,7 @@ import data.ForLoop;
 import data.Section;
 import data.Util;
 
-public class Fragment_SectionEdit extends Fragment implements Section.OnSectionChangedListener {
+public class Fragment_SectionEdit extends Fragment implements Section.OnSectionChangeListener {
 
     private static final String SECTION_POSITION = "section";
     public LinearLayout mBlockContainer;
@@ -34,6 +34,7 @@ public class Fragment_SectionEdit extends Fragment implements Section.OnSectionC
     private SurfaceView mSongMap;
     private Fragment_Fab mFabFragment;
     private FloatingActionButton mPlay;
+    private Section.OnSectionChangeProvider mSectionChangeProvider;
 
     public static Fragment_SectionEdit newInstance(Section section) {
         Fragment_SectionEdit fragment = new Fragment_SectionEdit();
@@ -48,6 +49,7 @@ public class Fragment_SectionEdit extends Fragment implements Section.OnSectionC
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = (Activity_Main) getActivity();
+        mSectionChangeProvider = (Section.OnSectionChangeProvider) getActivity();
         if (savedInstanceState != null) {
             mCurrentSection = (Section) savedInstanceState.getSerializable(Util.BundleKeys.SECTION);
         }
@@ -261,7 +263,8 @@ public class Fragment_SectionEdit extends Fragment implements Section.OnSectionC
     }
 
     @Override
-    public void onSectionChanged() {
+    public void onSectionChange(Section section) {
+        mCurrentSection = section;
         mBlockContainer.removeAllViews();
         initView();
     }

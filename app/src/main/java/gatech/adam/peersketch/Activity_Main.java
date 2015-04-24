@@ -50,7 +50,8 @@ public class Activity_Main
         CreateForLoopFitmediaDialogFragment.ForLoopFitMediaDialogListener,
         CreateForLoopMakeBeatDialogFragment.ForLoopMakeBeatDialogListener,
         CreateForLoopChoiceDialogFragment.ForLoopChoiceDialogListener,
-        CreateSectionDialogFragment.SectionDialogListener {
+        CreateSectionDialogFragment.SectionDialogListener,
+        Section.OnSectionChangeProvider  {
 
     // Data
     private static Song currentSong;
@@ -67,7 +68,7 @@ public class Activity_Main
     public Mode mMode;
     // Fragments
     private FragmentManager mFragmentManager; // Fragment manager, used for switching fragments
-    private Section currentSection;
+    private Section mCurrentSection;
     private int sectionNumber;
     private Group selectedToAddGroup;
     private Context context = this;
@@ -81,11 +82,11 @@ public class Activity_Main
         if (currentSong == null) {
             currentSong = new Song(120);
         } else if (!currentSong.getSections().isEmpty()) {
-            currentSection = currentSong.getSections().get(0);
+            mCurrentSection = currentSong.getSections().get(0);
             sectionNumber = 0;
         } else {
-            currentSection = new Section("New Section");
-            currentSong.addSection(currentSection, 0);
+            mCurrentSection = new Section("New Section");
+            currentSong.addSection(mCurrentSection, 0);
         }
 
         // Restoring saved instance state, if available
@@ -168,12 +169,12 @@ public class Activity_Main
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, ESFitMedia value) {
         if (!value.hasVariable() ||
-                (value.hasVariable() && currentSection.getVariables().containsKey(value.getStartVariable()))
-                        && currentSection.getVariables().containsKey(value.getEndVariable())) {
+                (value.hasVariable() && mCurrentSection.getVariables().containsKey(value.getStartVariable()))
+                        && mCurrentSection.getVariables().containsKey(value.getEndVariable())) {
             value.setSectionNumber(sectionNumber);
             // TODO(hendon)
-            currentSection.add(value, Util.DROP_LOCATION);
-            currentSection.addObject(value);
+            mCurrentSection.add(value, Util.DROP_LOCATION);
+            mCurrentSection.addObject(value);
             //mSectionItemsAdapter.add(value.toString());
             //mSectionItemsAdapter.notifyDataSetChanged();
             if (selectedToAddGroup != null) {
@@ -185,10 +186,10 @@ public class Activity_Main
             }
         } else {
             String unknownVariable = "";
-            if (!currentSection.getVariables().containsKey(value.getStartVariable())) {
+            if (!mCurrentSection.getVariables().containsKey(value.getStartVariable())) {
                 unknownVariable += value.getStartVariable();
             }
-            if (!currentSection.getVariables().containsKey(value.getEndVariable())) {
+            if (!mCurrentSection.getVariables().containsKey(value.getEndVariable())) {
                 unknownVariable += " " + value.getEndVariable();
             }
             Toast.makeText(context, "Unrecognized variable(s)" + unknownVariable +
@@ -200,7 +201,7 @@ public class Activity_Main
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, ForLoop value) {
         value.setSectionNumber(sectionNumber);
-        if (!currentSection.addVariable(value.getVariable(), value.getIterValues())) {
+        if (!mCurrentSection.addVariable(value.getVariable(), value.getIterValues())) {
             Toast.makeText(context, "Variable name:" + value.getVariable() + " already taken." +
                     " Please try again with a new name!", Toast.LENGTH_SHORT).show();
         } else {
@@ -210,8 +211,8 @@ public class Activity_Main
                 updateGroups(value);
             } else {
                 Log.i(TAG, "Added new ForLoop: " + value.toString());
-                currentSection.add(value, Util.DROP_LOCATION);
-                currentSection.addObject(value);
+                mCurrentSection.add(value, Util.DROP_LOCATION);
+                mCurrentSection.addObject(value);
             }
         }
     }
@@ -220,8 +221,8 @@ public class Activity_Main
     public void onDialogPositiveClick(DialogFragment dialog, ESSetEffect value) {
         value.setSectionNumber(sectionNumber);
         // TODO(hendon)
-        currentSection.add(value, Util.DROP_LOCATION);
-        currentSection.addObject(value);
+        mCurrentSection.add(value, Util.DROP_LOCATION);
+        mCurrentSection.addObject(value);
         //mSectionItemsAdapter.add(value.toString());
         //mSectionItemsAdapter.notifyDataSetChanged();
         if (selectedToAddGroup != null) {
@@ -252,10 +253,10 @@ public class Activity_Main
         @Override
     public void onDialogPositiveClick(DialogFragment dialog, ESMakeBeat value) {
         if (!value.hasVariable() ||
-                (value.hasVariable() && currentSection.getVariables().containsKey(value.getStartVariable()))) {
+                (value.hasVariable() && mCurrentSection.getVariables().containsKey(value.getStartVariable()))) {
             value.setSectionNumber(sectionNumber);
-            currentSection.add(value, Util.DROP_LOCATION);
-            currentSection.addObject(value);
+            mCurrentSection.add(value, Util.DROP_LOCATION);
+            mCurrentSection.addObject(value);
             if (selectedToAddGroup != null) {
                 Log.i(TAG, "Added new MakeBeat: " + value.toString() + " to "
                         + selectedToAddGroup.toString());
@@ -294,12 +295,12 @@ public class Activity_Main
         this.currentSong = to;
     }
 
-    public Section getCurrentSection() {
-        return currentSection;
+    public Section getmCurrentSection() {
+        return mCurrentSection;
     }
 
-    public void setCurrentSection(Section to) {
-        this.currentSection = to;
+    public void setmCurrentSection(Section to) {
+        this.mCurrentSection = to;
     }
 
     // Lock or unlock the pallet drawer
@@ -332,7 +333,7 @@ public class Activity_Main
                 isFabVisible = true;
                 break;
             case SECTION_EDITOR:
-                switchTo = Fragment_SectionEdit.newInstance(currentSection);
+                switchTo = Fragment_SectionEdit.newInstance(mCurrentSection);
                 isPalletVisible = true;
                 isFabVisible = true;
                 break;
@@ -421,12 +422,12 @@ public class Activity_Main
     }
 
     public void promptForLoopFitMediaDialogAndWrite() {
-        DialogFragment newFragment = CreateForLoopFitmediaDialogFragment.newInstance(currentSection);
+        DialogFragment newFragment = CreateForLoopFitmediaDialogFragment.newInstance(mCurrentSection);
         newFragment.show(getFragmentManager(), "createForLoopFitMedia");
     }
 
     public void promptForLoopMakeBeatDialogAndWrite() {
-        DialogFragment newFragment = CreateForLoopMakeBeatDialogFragment.newInstance(currentSection);
+        DialogFragment newFragment = CreateForLoopMakeBeatDialogFragment.newInstance(mCurrentSection);
         newFragment.show(getFragmentManager(), "createForLoopMakeBeat");
     }
 
@@ -436,10 +437,10 @@ public class Activity_Main
     }
 
     public void updateGroups(GroupObject value) {
-        for (Group group : currentSection.getSubgroups()) {
+        for (Group group : mCurrentSection.getSubgroups()) {
             if (selectedToAddGroup.equals(group)) {
                 if (group.getClass().equals(ForLoop.class)) {
-                    List<ForLoop> forLoops = currentSection.getForLoops();
+                    List<ForLoop> forLoops = mCurrentSection.getForLoops();
                     ForLoop containerForLoop = (ForLoop) group;
                     for (int i = 0; i < forLoops.size(); i++) {
                         if (forLoops.get(i).equals(containerForLoop)) {
@@ -473,6 +474,11 @@ public class Activity_Main
                 break;
             }
         }
+    }
+
+    @Override
+    public void setOnSectionChangeListener(Section.OnSectionChangeListener listener) {
+        mCurrentSection.setListener(listener);
     }
 
     @Override

@@ -24,7 +24,7 @@ public class Section extends Group implements Serializable {
     private int sectionNumber;
     private int tempoBPM;
     private int phraseLengthMeasures;
-    private OnSectionChangedListener listener;
+    private OnSectionChangeListener listener;
 
     public Section(String name) {
         this.name = name;
@@ -48,7 +48,7 @@ public class Section extends Group implements Serializable {
         this.variables = variables;
     }
 
-    public void setListener(OnSectionChangedListener listener) {
+    public void setListener(OnSectionChangeListener listener) {
         this.listener = listener;
     }
 
@@ -200,7 +200,10 @@ public class Section extends Group implements Serializable {
         return activeMeasures;
     }
 
-    public interface OnSectionChangedListener {
-        public void onSectionChanged();
+    public interface OnSectionChangeListener {
+        public void onSectionChange(Section section);
     }
+
+    public interface OnSectionChangeProvider {
+        void setOnSectionChangeListener(OnSectionChangeListener listener);}
 }

@@ -211,7 +211,7 @@ public class Fragment_SongEdit extends Fragment {
                 Section section = getSection(groupPosition);
 
                 // Updating main activity container to section fragment
-                mActivity.setCurrentSection(section);
+                mActivity.setmCurrentSection(section);
                 mActivity.setMode(Activity_Main.Mode.SECTION_EDITOR);
                 return true;
             }
@@ -231,7 +231,7 @@ public class Fragment_SongEdit extends Fragment {
             Section section = getSection(groupPosition, childPosition);
 
             // Updating main activity container to section fragment
-            mActivity.setCurrentSection(section);
+            mActivity.setmCurrentSection(section);
             mActivity.setMode(Activity_Main.Mode.SECTION_EDITOR);
             return false;
         }
