@@ -46,6 +46,9 @@ public class Section extends Group implements Serializable {
 
     public void setVariables(HashMap<String, List<Double>> variables) {
         this.variables = variables;
+        if (listener != null) {
+            listener.onSectionChange(this);
+        }
     }
 
     public void setListener(OnSectionChangeListener listener) {
@@ -70,6 +73,9 @@ public class Section extends Group implements Serializable {
         } else {
             forLoops.add(forLoop);
         }
+        if (listener != null) {
+            listener.onSectionChange(this);
+        }
     }
 
     /**
@@ -84,6 +90,9 @@ public class Section extends Group implements Serializable {
         } else {
             ifStatements.add(ifStatement);
         }
+        if (listener != null) {
+            listener.onSectionChange(this);
+        }
     }
 
     public void add(ESSetEffect effect, int location) {
@@ -91,6 +100,9 @@ public class Section extends Group implements Serializable {
             effects.add(location, effect);
         } else {
             effects.add(effect);
+        }
+        if (listener != null) {
+            listener.onSectionChange(this);
         }
     }
 
@@ -100,6 +112,9 @@ public class Section extends Group implements Serializable {
         } else {
             fitMedias.add(fitMedia);
         }
+        if (listener != null) {
+            listener.onSectionChange(this);
+        }
     }
 
     public void add(ESMakeBeat makeBeat, int location) {
@@ -107,6 +122,9 @@ public class Section extends Group implements Serializable {
             makeBeats.add(location, makeBeat);
         } else {
             makeBeats.add(makeBeat);
+        }
+        if (listener != null) {
+            listener.onSectionChange(this);
         }
     }
 
@@ -186,6 +204,9 @@ public class Section extends Group implements Serializable {
         fitMedias = new ArrayList<ESFitMedia>();
         makeBeats = new ArrayList<ESMakeBeat>();
         activeMeasures = new ArrayList<Pair<Double, Double>>();
+        if (listener != null) {
+            listener.onSectionChange(this);
+        }
     }
 
     public List<Pair<Double, Double>> calcActiveMeasures() {

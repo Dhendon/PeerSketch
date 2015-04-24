@@ -35,6 +35,7 @@ public class Fragment_SectionEdit extends Fragment implements Section.OnSectionC
     private Fragment_Fab mFabFragment;
     private FloatingActionButton mPlay;
     private Section.OnSectionChangeProvider mSectionChangeProvider;
+    private String TAG = "section-editor";
 
     public static Fragment_SectionEdit newInstance(Section section) {
         Fragment_SectionEdit fragment = new Fragment_SectionEdit();
@@ -167,8 +168,6 @@ public class Fragment_SectionEdit extends Fragment implements Section.OnSectionC
 
         // Adding block to view
         mBlockContainer.addView(block, 0);
-        mBlockContainer.invalidate();
-
     }
 
     public void createMakeBeatBlock(final ESMakeBeat makeBeat) {
@@ -218,7 +217,6 @@ public class Fragment_SectionEdit extends Fragment implements Section.OnSectionC
         });
         // Adding block to view
         mBlockContainer.addView(block, 0);
-        mBlockContainer.postInvalidate();
     }
 
     public void createForLoopBlock(final ForLoop forLoop) {

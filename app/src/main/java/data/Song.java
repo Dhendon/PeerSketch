@@ -11,15 +11,16 @@ import java.util.List;
  */
 public class Song extends Group implements Serializable {
     private static final long serialVersionUID = 7L;
-    List<Section> sections;
-    List<ForLoop> forLoops;
-    List<IfStatement> ifStatements;
-    List<ESSetEffect> effects;
-    List<Group> groups;
-    HashMap<String, String> variables;
-    int tempoBPM;
-    int phraseLength;
-    String description;
+    private List<Section> sections;
+    private List<ForLoop> forLoops;
+    private List<IfStatement> ifStatements;
+    private List<ESSetEffect> effects;
+    private List<Group> groups;
+    private HashMap<String, String> variables;
+    private int tempoBPM;
+    private int phraseLength;
+    private String description;
+    private OnSongChangeListener listener;
 
     public Song() {
         this(120);
@@ -52,6 +53,24 @@ public class Song extends Group implements Serializable {
             section.setSectionNumber(0);
             sections.add(section);
         }
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
+    }
+
+    public Section removeSection(int location) {
+        Section removed = null;
+        if (validLocation(location, sections)) {
+            removed = sections.remove(location);
+            if (listener != null) {
+                listener.onSongChange(this);
+            }
+        }
+        return removed;
+    }
+
+    public void setListener(OnSongChangeListener listener) {
+        this.listener = listener;
     }
 
     public HashMap<String, String> getVariables() {
@@ -60,6 +79,9 @@ public class Song extends Group implements Serializable {
 
     public void setVariables(HashMap<String, String> variables) {
         this.variables = variables;
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public void addGroup(Group group, int location) {
@@ -67,6 +89,9 @@ public class Song extends Group implements Serializable {
             groups.add(location, group);
         } else {
             groups.add(group);
+        }
+        if (listener != null) {
+            listener.onSongChange(this);
         }
     }
 
@@ -76,7 +101,9 @@ public class Song extends Group implements Serializable {
         } else {
             ifStatements.add(ifStatement);
         }
-
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public void addForLoop(ForLoop forLoop, int location) {
@@ -85,7 +112,9 @@ public class Song extends Group implements Serializable {
         } else {
             forLoops.add(forLoop);
         }
-
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     private boolean validLocation(int location, List<?> list) {
@@ -97,6 +126,9 @@ public class Song extends Group implements Serializable {
             return false;
         } else {
             variables.put(variable, value);
+            if (listener != null) {
+                listener.onSongChange(this);
+            }
             return true;
         }
     }
@@ -107,6 +139,9 @@ public class Song extends Group implements Serializable {
 
     public void setTempoBPM(int tempoBPM) {
         this.tempoBPM = tempoBPM;
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public int getPhraseLength() {
@@ -115,6 +150,9 @@ public class Song extends Group implements Serializable {
 
     public void setPhraseLength(int phraseLength) {
         this.phraseLength = phraseLength;
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public String getDescription() {
@@ -123,6 +161,9 @@ public class Song extends Group implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public List<Section> getSections() {
@@ -131,6 +172,9 @@ public class Song extends Group implements Serializable {
 
     public void setSections(List<Section> sections) {
         this.sections = sections;
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public List<ForLoop> getForLoops() {
@@ -139,6 +183,9 @@ public class Song extends Group implements Serializable {
 
     public void setForLoops(List<ForLoop> forLoops) {
         this.forLoops = forLoops;
+        if (listener != null) {
+            listener.onSongChange(this);
+        }
     }
 
     public List<IfStatement> getIfStatements() {
@@ -163,14 +210,16 @@ public class Song extends Group implements Serializable {
 
     public void setGroups(List<Group> groups) {
         this.groups = groups;
-    }
-
-    public void addContainer(Group group, int location) {
-        if (validLocation(location, groups)) {
-            groups.add(location, group);
-        } else {
-            groups.add(group);
+        if (listener != null) {
+            listener.onSongChange(this);
         }
     }
 
+    public interface OnSongChangeListener {
+        public void onSongChange(Song song);
+    }
+
+    public interface OnSongChangeProvider {
+        void setOnSongChangeListener(OnSongChangeListener listener);
+    }
 }

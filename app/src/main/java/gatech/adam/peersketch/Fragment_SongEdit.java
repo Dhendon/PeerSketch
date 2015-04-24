@@ -25,9 +25,10 @@ import audio.ESAudio;
 import data.Group;
 import data.Section;
 import data.Song;
+import data.Util;
 import gatech.adam.peersketch.views.ExpandableList_Adapter;
 
-public class Fragment_SongEdit extends Fragment {
+public class Fragment_SongEdit extends Fragment implements Song.OnSongChangeListener {
 
     private Fragment_Fab mFab;
     private Song mSong;
@@ -39,10 +40,14 @@ public class Fragment_SongEdit extends Fragment {
     private Fragment_Fab mFabFragment;
     private FloatingActionButton mPlay;
     private ExpandableList_Adapter mTrackListAdapter;
+    private Song.OnSongChangeProvider mSongChangeProvider;
 
     // Returns new instance of song fragment
     public static Fragment_SongEdit newInstance(Song song) {
         Fragment_SongEdit fragment = new Fragment_SongEdit();
+        Bundle args = new Bundle();
+        args.putSerializable(Util.BundleKeys.SONG, song);
+        fragment.setArguments(args);
         fragment.mSong = song;
         return fragment;
     }
@@ -53,7 +58,14 @@ public class Fragment_SongEdit extends Fragment {
 
         // Get handle to main activity
         mActivity = (Activity_Main) getActivity();
-
+        mSongChangeProvider = (Song.OnSongChangeProvider) getActivity();
+        if (savedInstanceState != null) {
+            mSong = (Song) savedInstanceState.getSerializable(Util.BundleKeys.SONG);
+        }
+        if (getArguments() != null) {
+            mSong = (Song) getArguments().getSerializable(Util.BundleKeys.SONG);
+            //mSectionPosition = getArguments().getInt(SECTION_POSITION);
+        }
         // Getting groups and mSections
         mGroups = mSong.getGroups();
         mSections = mSong.getSections();
@@ -69,6 +81,25 @@ public class Fragment_SongEdit extends Fragment {
 
         // Getting song minimap
         mSongMap = (Surface_Minimap) rootView.findViewById(R.id.surfaceView_songMap);
+
+        // Registers Activity_Main as listener
+        mSong.setListener(this);
+        // Instantiating floating action button fragment
+        mFabFragment = Fragment_Fab.newInstance();
+        getFragmentManager().beginTransaction()
+                .add(R.id.fabContainer, mFabFragment)
+                .commit();
+
+        mTrackList = (ExpandableListView) rootView.findViewById(R.id.listView_tracks);
+
+        // Setting play button listener
+        mPlay = (FloatingActionButton) rootView.findViewById(R.id.play);
+
+        initView();
+        return rootView;
+    }
+
+    public void initView() {
         mSongMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,13 +133,6 @@ public class Fragment_SongEdit extends Fragment {
                 return false;
             }
         });
-
-        // Instantiating floating action button fragment
-        mFabFragment = Fragment_Fab.newInstance();
-        getFragmentManager().beginTransaction()
-                .add(R.id.fabContainer, mFabFragment)
-                .commit();
-
         // Initiating track list adapter
         mTrackListAdapter = new ExpandableList_Adapter(
                 mActivity,
@@ -116,16 +140,13 @@ public class Fragment_SongEdit extends Fragment {
                 Activity_Main.ExpandableListAdapterMode.SONG_EDITOR
         );
 
-        // Getting track list and setting adapter
-        mTrackList = (ExpandableListView) rootView.findViewById(R.id.listView_tracks);
         mTrackList.setAdapter(mTrackListAdapter);
         mTrackList.setOnGroupClickListener(new GroupClickListener());
         mTrackList.setOnChildClickListener(new ChildClickListener());
         mTrackList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                mSections.remove(position);
-                mTrackListAdapter.notifyDataSetChanged();
+                mSong.removeSection(position);
                 return false;
             }
         });
@@ -133,9 +154,6 @@ public class Fragment_SongEdit extends Fragment {
         // Setting drag listeners
         mSongMap.setOnDragListener(new DragEventListener_Fragment_Song(false)); // Can't receive drops, sends view back to parent
         mTrackList.setOnDragListener(new DragEventListener_Fragment_Song(false)); // Can't receive drops, appends view to current view
-
-        // Setting play button listener
-        mPlay = (FloatingActionButton) rootView.findViewById(R.id.play);
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,7 +163,6 @@ public class Fragment_SongEdit extends Fragment {
             }
         });
 
-        return rootView;
     }
 
     public Section getSection(int groupPosition) {
@@ -158,10 +175,11 @@ public class Fragment_SongEdit extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-            mTrackList.deferNotifyDataSetChanged();
-        }
+    public void onSongChange(Song song) {
+        mSong = song;
+        mTrackListAdapter.notifyDataSetChanged();
+        initView();
+    }
 
     private class DragEventListener_Fragment_Song
             implements View.OnDragListener {
@@ -236,5 +254,4 @@ public class Fragment_SongEdit extends Fragment {
             return false;
         }
     }
-
 }

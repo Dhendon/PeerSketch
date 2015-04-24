@@ -51,10 +51,11 @@ public class Activity_Main
         CreateForLoopMakeBeatDialogFragment.ForLoopMakeBeatDialogListener,
         CreateForLoopChoiceDialogFragment.ForLoopChoiceDialogListener,
         CreateSectionDialogFragment.SectionDialogListener,
-        Section.OnSectionChangeProvider  {
+        Section.OnSectionChangeProvider,
+        Song.OnSongChangeProvider {
 
     // Data
-    private static Song currentSong;
+    private static Song mCurrentSong;
     // App
     private static String TAG = "main-activity";
     public DrawerLayout mDrawerContainer; // Drawer container
@@ -79,14 +80,14 @@ public class Activity_Main
         // Initializing dummy data
         initData();
 
-        if (currentSong == null) {
-            currentSong = new Song(120);
-        } else if (!currentSong.getSections().isEmpty()) {
-            mCurrentSection = currentSong.getSections().get(0);
+        if (mCurrentSong == null) {
+            mCurrentSong = new Song(120);
+        } else if (!mCurrentSong.getSections().isEmpty()) {
+            mCurrentSection = mCurrentSong.getSections().get(0);
             sectionNumber = 0;
         } else {
             mCurrentSection = new Section("New Section");
-            currentSong.addSection(mCurrentSection, 0);
+            mCurrentSong.addSection(mCurrentSection, 0);
         }
 
         // Restoring saved instance state, if available
@@ -288,11 +289,11 @@ public class Activity_Main
     }
 
     public Song getSong() {
-        return currentSong;
+        return mCurrentSong;
     }
 
     public void setSong(Song to) {
-        this.currentSong = to;
+        this.mCurrentSong = to;
     }
 
     public Section getmCurrentSection() {
@@ -328,7 +329,7 @@ public class Activity_Main
 
         switch (to) {
             case SONG_EDITOR:
-                switchTo = Fragment_SongEdit.newInstance(currentSong);
+                switchTo = Fragment_SongEdit.newInstance(mCurrentSong);
                 isPalletVisible = true;
                 isFabVisible = true;
                 break;
@@ -432,7 +433,7 @@ public class Activity_Main
     }
 
     public void promptCreateSection() {
-        DialogFragment newFragment = CreateSectionDialogFragment.newInstance(currentSong);
+        DialogFragment newFragment = CreateSectionDialogFragment.newInstance(mCurrentSong);
         newFragment.show(getFragmentManager(), "createSection");
     }
 
@@ -479,6 +480,11 @@ public class Activity_Main
     @Override
     public void setOnSectionChangeListener(Section.OnSectionChangeListener listener) {
         mCurrentSection.setListener(listener);
+    }
+
+    @Override
+    public void setOnSongChangeListener(Song.OnSongChangeListener listener) {
+        mCurrentSong.setListener(listener);
     }
 
     @Override
